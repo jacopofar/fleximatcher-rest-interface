@@ -1,0 +1,303 @@
+/* 
+ * Copyright 2014 Jacopo Farina.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import it.jacopofar.fleximatcher.FlexiMatcher;
+import it.jacopofar.fleximatcher.annotations.ListingAnnotatorHandler;
+import it.jacopofar.fleximatcher.annotations.MatchingResults;
+import it.jacopofar.fleximatcher.annotations.TextAnnotation;
+import it.jacopofar.fleximatcher.expressions.ExpressionParser;
+import it.jacopofar.fleximatcher.importer.FileTagLoader;
+import it.jacopofar.fleximatcher.italian.ItPosRuleFactory;
+import it.jacopofar.fleximatcher.italian.ItSpecificVerbRuleFactory;
+import it.jacopofar.fleximatcher.italian.ItTokenRuleFactory;
+import it.jacopofar.fleximatcher.italian.ItVerbFormRuleFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URLConnection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.LinkedList;
+
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+import org.simpleframework.http.Request;
+import org.simpleframework.http.Response;
+import org.simpleframework.http.core.Container;
+import org.simpleframework.http.core.ContainerServer;
+import org.simpleframework.transport.Server;
+import org.simpleframework.transport.connect.Connection;
+import org.simpleframework.transport.connect.SocketConnection;
+
+import com.github.jacopofar.italib.ItalianModel;
+import org.json.JSONException;
+
+
+public class AppMain implements Container {
+	protected static final int portToUse=9600;
+	private static FlexiMatcher fm;
+	private static FileWriter fwTag;
+	private static int tagCount=0;;
+
+        @Override
+	public void handle(Request request, Response response) {
+
+		long time = System.currentTimeMillis();
+		System.out.print(request.getPath().toString()+"\t"+request.getValues("Host")+" ");
+		System.out.println(request.getValues("User-agent")+" ");
+		response.setDate("Date", time);
+		try {
+
+			//static? send the file
+			if(request.getPath().toString().startsWith("/static/")){
+				String path=request.getPath().toString().substring("/static/".length());
+				File requested = new File("static"+File.separatorChar+path.replace('/', File.separatorChar));
+				if(!requested.getCanonicalPath().startsWith(new File("static").getCanonicalPath())){
+					System.err.println("Error, path outside the static folder:"+path);
+					return;
+				}
+				if(!requested.isFile()){
+					System.err.println("Error, file not found:"+path);
+					return;
+				}
+				//valid path, send it
+				String mimet=URLConnection.guessContentTypeFromName(path);
+				if(path.endsWith(".js"))
+					mimet="application/javascript";
+				if(path.endsWith(".css"))
+					mimet="text/css";
+				System.out.println("sending static resource:'"+path+"' mimetype:"+mimet);
+				response.setDate("Date", requested.lastModified());
+                            try (PrintStream body = response.getPrintStream()) {
+                                response.setValue("Content-Type", mimet);
+                                FileInputStream fis = new FileInputStream(requested);
+                                //copy the stream
+                                IOUtils.copy(fis,body);
+                                fis.close();
+                            }
+				return;
+			}
+                        //main page, show the index
+			if(request.getPath().toString().equals("/")){
+                            try (PrintStream body = response.getPrintStream()) {
+                                response.setValue("Content-Type", "text/html;charset=utf-8");
+                                File file = new File("index.html");
+                                System.out.println(file.getAbsolutePath());
+                                byte[] data;
+                                try (FileInputStream fis = new FileInputStream(file)) {
+                                    data = new byte[(int)file.length()];
+                                    fis.read(data);
+                                }
+                                body.write(data);
+                            }
+			}
+
+			if(request.getPath().toString().startsWith("/parse")){
+				response.setValue("Content-Type", "application/json;charset=utf-8");
+				try(PrintStream body = response.getPrintStream()) {
+                                    String text=request.getQuery().get("text");
+                                String pattern=request.getQuery().get("pattern");
+                                if(text==null || pattern==null){
+                                    body.write("{'error':'pattern or text not specified'}".getBytes("UTF-8"));
+                                    body.close();
+                                }
+                                System.err.println("request to parse text: "+text+"\nfor pattern: "+pattern);
+                                MatchingResults results=null;
+                                JSONObject ret=new JSONObject();
+                                try{
+                                    long start=System.currentTimeMillis();
+                                    results= fm.matches(text, pattern, FlexiMatcher.getDefaultAnnotator(), true, false, true);
+                                    ret.put("time to parse", System.currentTimeMillis()-start);
+                                }
+                                catch(RuntimeException r){
+                                    body.write(("{\"error\":"+JSONObject.quote(r.getMessage())+"}").getBytes("UTF-8"));
+                                    body.close();
+                                    return;
+                                }
+                                ret.put("matches", results.isMatching());
+                                ret.put("empty_match", results.isEmptyMatch());
+                                ret.put("text",text);
+                                ret.put("pattern",pattern);
+                                if(!results.getAnnotations().isPresent()){
+                                    body.write(ret.toString().getBytes("UTF-8"));
+                                    body.close();
+                                    return;
+                                }
+                                for(LinkedList<TextAnnotation> interpretation:results.getAnnotations().get()){
+                                    JSONObject addMe = new JSONObject();
+                                    
+                                    for(TextAnnotation v:interpretation){
+                                        addMe.append("annotations", new JSONObject(v.toJSON()));
+                                    }
+                                    ret.append("interpretations", addMe);
+                                }
+                                body.write(ret.toString(1).getBytes("UTF-8"));
+				}				return;
+			}
+
+			if(request.getPath().toString().startsWith("/trace")){
+				response.setValue("Content-Type", "application/json;charset=utf-8");
+				try(PrintStream body = response.getPrintStream()) {
+                                    String text=request.getQuery().get("text");
+                                String pattern=request.getQuery().get("pattern");
+                                if(text==null || pattern==null){
+                                    body.write("{'error':'pattern or text not specified'}".getBytes("UTF-8"));
+                                    body.close();
+                                }
+                                System.err.println("request to parse text: "+text+"\nfor pattern: "+pattern);
+                                JSONObject ret=new JSONObject();
+                                ListingAnnotatorHandler ah;
+                                try{
+                                    long start=System.currentTimeMillis();
+                                    ah = new ListingAnnotatorHandler();
+                                    fm.matches(text, pattern, ah, true, false, true);
+                                    ret.put("time", System.currentTimeMillis()-start);
+                                }
+                                catch(RuntimeException r){
+                                    body.write(("{\"error\":"+JSONObject.quote(r.getMessage())+"}").getBytes("UTF-8"));
+                                    body.close();
+                                    return;
+                                }
+                                ret.put("text",text);
+                                ret.put("pattern",pattern);
+                                LinkedList<TextAnnotation> nonOverlappingTA=new LinkedList<>();
+                                JSONObject addMe = new JSONObject();
+                                for(TextAnnotation v:ah.getAnnotations()){
+                                    if(nonOverlappingTA.stream().anyMatch(p->p.getSpan().intersects(v.getSpan()))){
+                                        ret.append("interpretations", addMe);
+                                        addMe = new JSONObject();
+                                        addMe.append("annotations", new JSONObject(v.toJSON()));
+                                        nonOverlappingTA.clear();
+                                    }
+                                    else{
+                                        addMe.append("annotations", new JSONObject(v.toJSON()));
+                                    }
+                                    nonOverlappingTA.add(v);
+                                    
+                                }
+                                ret.append("interpretations", addMe);
+                                body.write(ret.toString(1).getBytes("UTF-8"));
+				}				return;
+			}
+
+
+			if(request.getPath().toString().startsWith("/addtag")){
+				if(tagCount==0)
+					fwTag.write("\n#tags added from web interface at "+LocalDate.now().toString()+"\n");
+
+				tagCount++;	
+				response.setValue("Content-Type", "application/json;charset=utf-8");
+                            try (PrintStream body = response.getPrintStream()) {
+                                String tag=request.getQuery().getOrDefault("tag", "");
+                                String pattern=request.getQuery().getOrDefault("pattern", "");
+                                
+                                if(tag.isEmpty() || pattern.isEmpty()){
+                                    body.write("{\"error\":\"tag or pattern not specified\"}".getBytes("UTF-8"));
+                                    body.close();
+                                    return;
+                                }
+                                
+                                String identifier=request.getQuery().getOrDefault("identifier", "");
+                                String annotationTemplate=request.getQuery().getOrDefault("annotation_template", "").trim();
+                                
+                                
+                                if(identifier.isEmpty()){
+                                    identifier="auto_"+LocalDate.now().toString()+"_"+tagCount;
+                                }
+                                
+                                
+                                //check that rule identifiers are known
+                                for(String part:ExpressionParser.split(pattern)){
+                                    if(!part.startsWith("["))
+                                        continue;
+                                    if(!fm.isBoundRule(ExpressionParser.ruleName(part))){
+                                        body.write(("{\"error\":\"rule '"+ExpressionParser.ruleName(part)+"' non known\"}").getBytes("UTF-8"));
+                                        body.close();
+                                        return;
+                                    }
+                                }
+                                
+                                fwTag.write(tag+"\t"+pattern+"\t"+identifier+"\t"+annotationTemplate+"\n");
+                                fwTag.flush();
+                                if(annotationTemplate.isEmpty())
+                                    fm.addTagRule(tag, pattern, identifier);
+                                else
+                                    fm.addTagRule(tag, pattern, identifier, annotationTemplate);
+                                body.write(("{\"identifier\":"+JSONObject.quote(identifier)+"}").getBytes("UTF-8"));
+                            }
+				return;
+				
+
+			}
+//unknown request
+                    try (PrintStream body = response.getPrintStream()) {
+                        response.setValue("Content-Type", "text/plain");
+                        response.setDate("Last-Modified", time);
+                        response.setCode(401);
+                        body.println("HTTP request for page '"+request.getPath().toString()+"' non understood in "+this.getClass().getCanonicalName());
+                    }
+		} catch(IOException | JSONException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+
+	public static void main(String[] list) throws IOException{
+		setProxy();
+		System.out.println("loading Italian model...");
+
+		ItalianModel im = null;
+		try {
+			im = new ItalianModel();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.exit(2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		System.out.println("starting matcher...");
+		fm=new FlexiMatcher();
+		fm.bind("it-pos", new ItPosRuleFactory(im));
+		fm.bind("it-token", new ItTokenRuleFactory(im));
+		fm.bind("it-verb-conjugated", new ItSpecificVerbRuleFactory(im));
+		fm.bind("it-verb-form", new ItVerbFormRuleFactory(im));
+		String fname="rule_list.tsv";
+		FileTagLoader.readTagsFromTSV(fname, fm);
+
+		fwTag=new FileWriter(fname,true);
+
+		System.out.println("starting server at port "+portToUse+"...");
+
+
+		Container container = new AppMain();
+		Server server;
+		server = new ContainerServer(container);
+		@SuppressWarnings("resource")
+		Connection connection = new SocketConnection(server);
+		SocketAddress address = new InetSocketAddress(portToUse);
+		connection.connect(address);
+	}
+
+	public static void setProxy(){
+		//		System.setProperty("http.proxyHost","proxy.mycompany.com");
+		//		System.setProperty("http.proxyPort","8080");
+	}
+}

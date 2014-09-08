@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test parsing results</title>
+<link type="text/css" rel="stylesheet" href="/static/jquery.qtip.css" />
+</head>
+<body>
+	<script src="/static/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="/static/jquery.qtip.min.js"></script>
+	<div id="element"></div>
+	<div id="main_form">
+		<form id="test_form">
+			Text:<br />
+			<textarea id="text" cols=60 rows=5>Il gatto mangia la mela</textarea>
+			<br /> Pattern:<br />
+			<textarea id="pattern" cols=60 rows=5>[it-pos:RD] [it-pos:Ss]</textarea>
+			<br />
+			<button type="button" id="btn_parse">Parse</button>
+			<button type="button" id="btn_trace">Trace</button>
+		</form>
+	</div>
+
+	<form id="addtag_form">
+		Tag:<br /> <input type="text" id="tag_name" size=100 /> <br /> Pattern:<br /> <input
+			type="text" id="tag_pattern" size=100 />
+			<br />
+			Identifier (optional):<br /> <input
+			type="text" id="tag_identifier" size=100 /> <br />
+			Annotation template:<br /> <input
+			type="text" id="tag_annotation" size=100 /> <br />
+		<button type="button" id="btn_addtag">Add tag</button>
+	</form>
+
+
+	<div id="results">
+	<p id="add_tag_result"></p>
+		<p>
+			<strong id="match_status"></strong>
+		</p>
+		<div id="marked_texts">
+			
+		</div>
+	</div>
+	<pre id="raw_results">
+	
+	</pre>
+	<script>
+		var colors=['red', 'green', 'blue', 'orange', 'purple'];;
+			$(function() {
+
+				$("#btn_addtag")
+				.click(
+						function(event) {
+							$.ajax({
+								type : "GET",
+								url : "/addtag",
+								data : {
+									'tag' : $('#tag_name').val(),
+									'pattern' : $('#tag_pattern').val(),
+									'identifier' : $('#tag_identifier').val(),
+									'annotation_template' : $('#tag_annotation').val()
+								},
+								success : function(data) {
+									if(data.error){
+										$('#add_tag_result').css('color','red').text(data.error);
+										}
+										else
+									$('#add_tag_result').css('color','black').text(JSON.stringify(data,undefined,1));
+								},
+								dataType : "json"
+	
+						});
+							});
+				
+				$("#btn_parse")
+						.click(
+								function(event) {
+									$("#add_tag_result").empty();
+									$(this).css('color', 'red');
+
+									$.ajax({
+												type : "GET",
+												url : "/parse",
+												data : {
+													'text' : $('#text').val(),
+													'pattern' : $('#pattern').val()
+												},
+												success : function(data) {
+													$("#raw_results").html(JSON.stringify(data,undefined,2));
+													if ('error' in data) {
+														$("#match_status").text("ERROR: "+data.error);
+														$("#match_status").css('color','red');
+														return;
+													}
+													$("#match_status").css('color','black');
+													if (!data.matches)
+														$("#match_status").text("Not matching!");
+													else
+														$("#match_status").text("Match! (in "+data.time+" ms)");
+													$("#btn_parse").css('color', 'green');
+													var text=$('#text').val();
+													$("#marked_texts").empty();
+													for (var index_int = 0; index_int < data.interpretations.length; index_int++) {
+														$("#marked_texts").append("<p id='int_"+index_int+"'></p>");
+														for (var index = 0; index < text.length; index++) {
+															$("#int_"+ index_int).append('<span id="c_'+index_int+'_'+index+'">'+ text.charAt(index)+ '</span>');
+														}
+														for(var ann_num=0; ann_num<data.interpretations[index_int].annotations.length;ann_num++){
+															//console.log('ann_num: '+ann_num);
+															for (var char_pos=data.interpretations[index_int].annotations[ann_num].span_start;
+															char_pos<data.interpretations[index_int].annotations[ann_num].span_end;
+															char_pos++){
+															$('#c_'+index_int+'_'+char_pos).css('color', colors[ann_num % colors.length])
+															.qtip({content: {text:JSON.stringify(data.interpretations[index_int].annotations[ann_num],undefined,2)}});
+															//console.log('#c_'+index_int+'_'+char_pos+' '+colors[ann_num % colors.length]);
+															}
+														}
+													}
+													
+
+												},
+												dataType : "json"
+											});
+
+								
+
+									event.preventDefault();
+								});
+								
+								
+						$("#btn_trace")
+						.click(
+								function(event) {
+									$("#add_tag_result").empty();
+									$(this).css('color', 'red');
+
+									$.ajax({
+												type : "GET",
+												url : "/trace",
+												data : {
+													'text' : $('#text').val(),
+													'pattern' : $('#pattern').val()
+												},
+												success : function(data) {
+													$("#match_status").text("Tracing (parsed in "+data.time+" ms)");
+													$("#raw_results").html(JSON.stringify(data,undefined,2));
+													if ('error' in data) {
+														$("#match_status").text("ERROR: "+data.error);
+														$("#match_status").css('color','red');
+														return;
+													}
+													$("#match_status").css('color','black');
+													
+													$("#btn_trace").css('color', 'green');
+													var text=$('#text').val();
+													$("#marked_texts").empty();
+													for (var index_int = 0; index_int < data.interpretations.length; index_int++) {
+														$("#marked_texts").append("<p id='int_"+index_int+"'></p>");
+														for (var index = 0; index < text.length; index++) {
+															$("#int_"+ index_int).append('<span id="c_'+index_int+'_'+index+'">'+ text.charAt(index)+ '</span>');
+														}
+														for(var ann_num=0; ann_num<data.interpretations[index_int].annotations.length;ann_num++){
+															//console.log('ann_num: '+ann_num);
+															for (var char_pos=data.interpretations[index_int].annotations[ann_num].span_start;
+															char_pos<data.interpretations[index_int].annotations[ann_num].span_end;
+															char_pos++){
+															$('#c_'+index_int+'_'+char_pos).css('color', colors[ann_num % colors.length])
+															.qtip({content: {text:JSON.stringify(data.interpretations[index_int].annotations[ann_num],undefined,2)}});
+															//console.log('#c_'+index_int+'_'+char_pos+' '+colors[ann_num % colors.length]);
+															}
+														}
+													}
+													
+
+												},
+												dataType : "json"
+											});
+
+								
+
+									event.preventDefault();
+								});
+			});
+		</script>
+</body>
+</html>
