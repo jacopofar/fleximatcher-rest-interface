@@ -2,21 +2,21 @@
 <html>
 <head>
 <title>Test parsing results</title>
-<link type="text/css" rel="stylesheet" href="/static/jquery.qtip.css" />
+<link type="text/css" rel="stylesheet" href="/jquery.qtip.css" />
 </head>
 <body>
-	<script src="/static/jquery-2.0.3.min.js"></script>
-	<script type="text/javascript" src="/static/jquery.qtip.min.js"></script>
+	<script src="/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript" src="/jquery.qtip.min.js"></script>
 	<div id="element"></div>
 	<div id="main_form">
 		<form id="test_form">
 			Text:<br />
-			<textarea id="text" cols=60 rows=5>Il gatto mangia la mela</textarea>
+			<textarea id="text" cols=60 rows=5>AbC</textarea>
 			<br /> Pattern:<br />
-			<textarea id="pattern" cols=60 rows=5>[it-pos:RD] [it-pos:Ss]</textarea>
+			<textarea id="pattern" cols=60 rows=5>A[i:b][r:C]</textarea>
 			<br />
 			<button type="button" id="btn_parse">Parse</button>
-			<button type="button" id="btn_trace">Trace</button>
+			<!--<button type="button" id="btn_trace">Trace</button>-->
 		</form>
 	</div>
 
