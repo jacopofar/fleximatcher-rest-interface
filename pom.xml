@@ -45,6 +45,14 @@
                 </executions>
             </plugin>
 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <mainClass>App</mainClass>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -84,8 +92,6 @@
             <groupId>com.github.jacopofar.fleximatcher</groupId>
             <artifactId>fleximatcher</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../fleximatcher/target/fleximatcher-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
