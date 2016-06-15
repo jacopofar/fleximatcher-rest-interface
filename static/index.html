@@ -93,7 +93,7 @@
 														return;
 													}
 													$("#match_status").css('color','black');
-													if (!data.matches)
+													if (!data.is_matching)
 														$("#match_status").text("Not matching!");
 													else
 														$("#match_status").text("Match! (in "+data.time+" ms)");
