@@ -1,11 +1,13 @@
 package com.github.jacopofar.fleximatcherwebinterface;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jacopofar.fleximatcher.FlexiMatcher;
 import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
+import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
 import org.json.JSONObject;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -16,14 +18,13 @@ import static spark.Spark.*;
  */
 public class Fwi {
     private static FlexiMatcher fm;
-    private static FileWriter fwTag;
     private static int tagCount=0;
 
     public static void main(String[] args) throws IOException {
 
         System.out.println("starting matcher...");
         fm = new FlexiMatcher();
-
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
         /*
         fm.bind("it-pos", new ItPosRuleFactory(im));
         fm.bind("it-token", new ItTokenRuleFactory(im));
@@ -33,7 +34,6 @@ public class Fwi {
         String fname="rule_list.tsv";
         FileTagLoader.readTagsFromTSV(fname, fm);
 
-        fwTag=new FileWriter(fname,true);
 
 
         staticFiles.externalLocation("static");
@@ -73,6 +73,27 @@ public class Fwi {
             return retVal.toString();
         });
 
+
+        put("/tagrule", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+
+            TagRulePayload newPost = mapper.readValue(request.body(), TagRulePayload.class);
+            if(newPost.errorMessages().size() != 0){
+                response.status(400);
+                return "invalid request body. Errors: " + newPost.errorMessages() ;
+            }
+            System.out.println("RULE TO BE CREATED: " + newPost.toString());
+            fm.addTagRule(newPost.getTag(),newPost.getPattern(), newPost.getIdentifier(),newPost.getAnnotationTemplate());
+            return "rule created: " + newPost.toString();
+        });
+
+        exception(Exception.class, (exception, request, response) -> {
+            //show the exceptions using stdout
+            System.out.println("Exception!");
+            exception.printStackTrace(System.out);
+
+            response.body(exception.getMessage());
+        });
 
 
     }
