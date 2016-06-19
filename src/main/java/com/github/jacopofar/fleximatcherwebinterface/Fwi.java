@@ -10,6 +10,7 @@ import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
 import org.json.JSONObject;
 import spark.Response;
 
+import javax.servlet.ServletOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
@@ -120,6 +121,44 @@ public class Fwi {
             response.body(exception.getMessage());
         });
 
+        /**
+         * Delete a specific tag rule
+         * */
+        delete("/tagrule/:tagname/:tag_identifier", (request, response) -> {
+            if(fm.removeTagRule(request.params(":tagname"), request.params(":tag_identifier"))){
+                response.status(200);
+                return "rule removed";
+            }
+            else {
+                response.status(404);
+                return "rule not found";
+            }
+        });
+
+        /**
+         * List the known tags
+         * */
+        get("/tags", (request, response) -> {
+            response.type("application/json");
+            ServletOutputStream os = response.raw().getOutputStream();
+            os.write("[".getBytes());
+            final boolean[] first = {true};
+            fm.getTagNames().forEach( tn -> {
+                try {
+                    if(!first[0]) os.write(",".getBytes());
+                    first[0] = false;
+                    os.write(JSONObject.quote(tn).getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            os.write("]".getBytes());
+
+            os.flush();
+            os.close();
+            return response.raw();
+
+        });
 
     }
 
