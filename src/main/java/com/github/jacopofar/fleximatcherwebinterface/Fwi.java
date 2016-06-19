@@ -7,6 +7,7 @@ import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
+import org.json.JSONException;
 import org.json.JSONObject;
 import spark.Response;
 
@@ -159,6 +160,38 @@ public class Fwi {
             return response.raw();
 
         });
+
+        /**
+         * Define the known rules for a tag
+         * */
+        get("/tag/:tagname", (request, response) -> {
+            response.type("application/json");
+            ServletOutputStream os = response.raw().getOutputStream();
+            os.write("[".getBytes());
+            final boolean[] first = {true};
+            fm.getTagDefinitions(request.params(":tagname")).forEach( td -> {
+                try {
+                    if(!first[0]) os.write(",".getBytes());
+                    first[0] = false;
+                    JSONObject jo = new JSONObject();
+                    jo.put("id", td.getIdentifier());
+                    jo.put("pattern", td.getPattern());
+                    os.write(jo.toString().getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    //can never happen, key is hardcoded and not null
+                    e.printStackTrace();
+                }
+            });
+            os.write("]".getBytes());
+
+            os.flush();
+            os.close();
+            return response.raw();
+
+        });
+
 
     }
 
