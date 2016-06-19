@@ -64,6 +64,8 @@ public class TagRulePayload {
             ret.push("no identifier specified");
         if(annotationTemplate == null)
             ret.push("no annotationTemplate specified");
+        if(tag == null)
+            ret.push("no tag specified");
         return ret;
     }
 }

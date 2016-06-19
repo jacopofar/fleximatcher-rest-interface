@@ -5,8 +5,10 @@ import com.github.jacopofar.fleximatcher.FlexiMatcher;
 import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
+import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
 import org.json.JSONObject;
+import spark.Response;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -43,22 +45,15 @@ public class Fwi {
 
         get("/parse", (request, response) -> {
 
-            JSONObject retVal = new JSONObject();
             String text = request.queryMap().get("text").value();
             String pattern = request.queryMap().get("pattern").value();
             System.out.println(text+" -- "+pattern);
+
             MatchingResults results;
-            try{
-                long start=System.currentTimeMillis();
-                results = fm.matches(text, pattern, FlexiMatcher.getDefaultAnnotator(), true, false, true);
-                retVal.put("time_to_parse", System.currentTimeMillis()-start);
-            }
-            catch(RuntimeException r){
-                System.out.println(r.getMessage());
-                r.printStackTrace();
-                return "{\"error\":"+JSONObject.quote(r.getMessage())+"}";
-            }
-            System.out.println(results.toString());
+            JSONObject retVal = new JSONObject();
+            long start=System.currentTimeMillis();
+            results = fm.matches(text, pattern, FlexiMatcher.getDefaultAnnotator(), true, false, true);
+            retVal.put("time_to_parse", System.currentTimeMillis()-start);
             retVal.put("is_matching", results.isMatching());
             retVal.put("empty_match", results.isEmptyMatch());
             for(LinkedList<TextAnnotation> interpretation:results.getAnnotations().get()){
@@ -69,14 +64,13 @@ public class Fwi {
                 }
                 retVal.append("interpretations", addMe);
             }
+            return sendJSON(response, retVal);
 
-            return retVal.toString();
         });
 
 
         put("/tagrule", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
-
             TagRulePayload newPost = mapper.readValue(request.body(), TagRulePayload.class);
             if(newPost.errorMessages().size() != 0){
                 response.status(400);
@@ -87,14 +81,50 @@ public class Fwi {
             return "rule created: " + newPost.toString();
         });
 
+        post("/parse", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            ParseRequestPayload newPost = mapper.readValue(request.body(), ParseRequestPayload.class);
+            if(newPost.errorMessages().size() != 0){
+                response.status(400);
+                return "invalid request body. Errors: " + newPost.errorMessages() ;
+            }
+
+
+            MatchingResults results;
+            JSONObject retVal = new JSONObject();
+            long start=System.currentTimeMillis();
+            //TODO allow the request to specify parsing flags
+            results = fm.matches(newPost.getText(),newPost.getPattern(),FlexiMatcher.getDefaultAnnotator(), true, false, true);
+
+            retVal.put("time_to_parse", System.currentTimeMillis()-start);
+            retVal.put("is_matching", results.isMatching());
+            retVal.put("empty_match", results.isEmptyMatch());
+            if(results.isMatching()){
+                for(LinkedList<TextAnnotation> interpretation:results.getAnnotations().get()){
+                    JSONObject addMe = new JSONObject();
+
+                    for(TextAnnotation v:interpretation){
+                        addMe.append("annotations", new JSONObject(v.toJSON()));
+                    }
+                    retVal.append("interpretations", addMe);
+                }
+            }
+            return sendJSON(response, retVal);
+        });
+
         exception(Exception.class, (exception, request, response) -> {
             //show the exceptions using stdout
-            System.out.println("Exception!");
+            System.out.println("Exception:");
             exception.printStackTrace(System.out);
 
             response.body(exception.getMessage());
         });
 
 
+    }
+
+    private static String sendJSON(Response r, JSONObject obj) {
+        r.type("application/json");
+        return obj.toString();
     }
 }
