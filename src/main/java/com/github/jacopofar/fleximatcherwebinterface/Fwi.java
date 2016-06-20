@@ -45,6 +45,15 @@ public class Fwi {
         //staticFiles.externalLocation("/static");
         //  port(5678); <- Uncomment this if you want spark to listen to port 5678 in stead of the default 4567
 
+        //show exceptions in console and HTTP responses
+        exception(Exception.class, (exception, request, response) -> {
+            //show the exceptions using stdout
+            System.out.println("Exception:");
+            exception.printStackTrace(System.out);
+
+            response.body(exception.getMessage());
+        });
+
         get("/parse", (request, response) -> {
 
             String text = request.queryMap().get("text").value();
@@ -71,7 +80,7 @@ public class Fwi {
         });
 
 
-        put("/tagrule", (request, response) -> {
+        put("/tags/:tagname/:tag_identifier", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
             TagRulePayload newPost = mapper.readValue(request.body(), TagRulePayload.class);
             if(newPost.errorMessages().size() != 0){
@@ -79,8 +88,27 @@ public class Fwi {
                 return "invalid request body. Errors: " + newPost.errorMessages() ;
             }
             System.out.println("RULE TO BE CREATED: " + newPost.toString());
-            fm.addTagRule(newPost.getTag(),newPost.getPattern(), newPost.getIdentifier(),newPost.getAnnotationTemplate());
-            return "rule created: " + newPost.toString();
+            fm.addTagRule(request.params(":tagname"),newPost.getPattern(), request.params(":tag_identifier"),newPost.getAnnotationTemplate());
+            return "rule for tag " + request.params(":tagname") + " having id " + request.params(":tag_identifier") + " : " + newPost.toString();
+        });
+
+        post("/tags/:tagname", (request, response) -> {
+            String tagName = request.params(":tagname");
+            int newId = 1;
+
+            while(fm.getTagRule(tagName, tagName + "_" + newId).isPresent()){
+                newId++;
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            TagRulePayload newPost = mapper.readValue(request.body(), TagRulePayload.class);
+            if(newPost.errorMessages().size() != 0){
+                response.status(400);
+                return "invalid request body. Errors: " + newPost.errorMessages() ;
+            }
+            System.out.println("RULE TO BE CREATED: " + newPost.toString());
+            fm.addTagRule(tagName,newPost.getPattern(), tagName + "_" + newId,newPost.getAnnotationTemplate());
+
+            return "rule for tag " + tagName + " having id " + tagName + "_" + newId + " : " + newPost.toString();
         });
 
         post("/parse", (request, response) -> {
@@ -91,11 +119,11 @@ public class Fwi {
                 return "invalid request body. Errors: " + newPost.errorMessages() ;
             }
 
-
             MatchingResults results;
             JSONObject retVal = new JSONObject();
             long start=System.currentTimeMillis();
             //TODO allow the request to specify parsing flags
+            //the flags are: fullyAnnotate,  matchWhole, populateResult
             results = fm.matches(newPost.getText(),newPost.getPattern(),FlexiMatcher.getDefaultAnnotator(), true, false, true);
 
             retVal.put("time_to_parse", System.currentTimeMillis()-start);
@@ -114,18 +142,10 @@ public class Fwi {
             return sendJSON(response, retVal);
         });
 
-        exception(Exception.class, (exception, request, response) -> {
-            //show the exceptions using stdout
-            System.out.println("Exception:");
-            exception.printStackTrace(System.out);
-
-            response.body(exception.getMessage());
-        });
-
         /**
          * Delete a specific tag rule
          * */
-        delete("/tagrule/:tagname/:tag_identifier", (request, response) -> {
+        delete("/tags/:tagname/:tag_identifier", (request, response) -> {
             if(fm.removeTagRule(request.params(":tagname"), request.params(":tag_identifier"))){
                 response.status(200);
                 return "rule removed";
@@ -162,9 +182,9 @@ public class Fwi {
         });
 
         /**
-         * Define the known rules for a tag
+         * List the known rules for a given tag
          * */
-        get("/tag/:tagname", (request, response) -> {
+        get("/tags/:tagname", (request, response) -> {
             response.type("application/json");
             ServletOutputStream os = response.raw().getOutputStream();
             os.write("[".getBytes());
@@ -189,10 +209,7 @@ public class Fwi {
             os.flush();
             os.close();
             return response.raw();
-
         });
-
-
     }
 
     private static String sendJSON(Response r, JSONObject obj) {
