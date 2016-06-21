@@ -8,6 +8,46 @@ import java.util.LinkedList;
 public class ParseRequestPayload {
     String text;
     String pattern;
+    boolean fullyAnnotate = true;
+    boolean matchWhole = false;
+    boolean populateResult = true;
+
+    public boolean isFullyAnnotate() {
+        return fullyAnnotate;
+    }
+
+    public void setFullyAnnotate(boolean fullyAnnotate) {
+        this.fullyAnnotate = fullyAnnotate;
+    }
+
+    @Override
+    public String toString() {
+        return "ParseRequestPayload{" +
+                "text='" + text + '\'' +
+                ", pattern='" + pattern + '\'' +
+                ", fullyAnnotate=" + fullyAnnotate +
+                ", matchWhole=" + matchWhole +
+                ", populateResult=" + populateResult +
+                '}';
+    }
+
+    public boolean isMatchWhole() {
+        return matchWhole;
+    }
+
+    public void setMatchWhole(boolean matchWhole) {
+        this.matchWhole = matchWhole;
+    }
+
+    public boolean isPopulateResult() {
+        return populateResult;
+    }
+
+    public void setPopulateResult(boolean populateResult) {
+        this.populateResult = populateResult;
+    }
+
+
 
     public String getText() {
         return text;

@@ -113,18 +113,18 @@ public class Fwi {
 
         post("/parse", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
-            ParseRequestPayload newPost = mapper.readValue(request.body(), ParseRequestPayload.class);
-            if(newPost.errorMessages().size() != 0){
+            ParseRequestPayload parseRequest = mapper.readValue(request.body(), ParseRequestPayload.class);
+            if(parseRequest.errorMessages().size() != 0){
                 response.status(400);
-                return "invalid request body. Errors: " + newPost.errorMessages() ;
+                return "invalid request body. Errors: " + parseRequest.errorMessages() ;
             }
-
+            System.out.println("PARSE REQUEST: " + parseRequest.toString());
             MatchingResults results;
             JSONObject retVal = new JSONObject();
             long start=System.currentTimeMillis();
-            //TODO allow the request to specify parsing flags
             //the flags are: fullyAnnotate,  matchWhole, populateResult
-            results = fm.matches(newPost.getText(),newPost.getPattern(),FlexiMatcher.getDefaultAnnotator(), true, false, true);
+
+            results = fm.matches(parseRequest.getText(),parseRequest.getPattern(),FlexiMatcher.getDefaultAnnotator(), parseRequest.isFullyAnnotate(), parseRequest.isMatchWhole(), parseRequest.isPopulateResult());
 
             retVal.put("time_to_parse", System.currentTimeMillis()-start);
             retVal.put("is_matching", results.isMatching());
