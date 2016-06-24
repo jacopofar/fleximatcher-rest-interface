@@ -40,9 +40,6 @@ public class TagRulePayload {
         LinkedList<String> ret = new LinkedList<String>();
         if(pattern == null)
             ret.push("no pattern specified");
-
-        if(annotationTemplate == null)
-            ret.push("no annotationTemplate specified");
         return ret;
     }
 }
