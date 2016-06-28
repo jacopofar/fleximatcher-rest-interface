@@ -5,6 +5,7 @@ import com.github.jacopofar.fleximatcher.FlexiMatcher;
 import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
+import com.github.jacopofar.fleximatcherwebinterface.messages.AnnotatorPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
 import org.json.JSONException;
@@ -17,9 +18,6 @@ import java.util.LinkedList;
 
 import static spark.Spark.*;
 
-/**
- * A simple example just showing some basic functionality
- */
 public class Fwi {
     private static FlexiMatcher fm;
     private static int tagCount=0;
@@ -140,6 +138,22 @@ public class Fwi {
                 }
             }
             return sendJSON(response, retVal);
+        });
+
+/**
+ * Add a new annotator
+ * */
+        put("/rules/:rulename", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            AnnotatorPayload newPost = mapper.readValue(request.body(), AnnotatorPayload.class);
+            if(newPost.errorMessages().size() != 0){
+                response.status(400);
+                return "invalid request body. Errors: " + newPost.errorMessages() ;
+            }
+            System.out.println("NEW ANNOTATOR TO BE CREATED: " + newPost.toString());
+            //TODO add the HTTP annotator using fm.bind
+
+
         });
 
         /**

@@ -3,7 +3,7 @@ package com.github.jacopofar.fleximatcherwebinterface.messages;
 import java.util.LinkedList;
 
 /**
- * Created by utente on 2016-06-19.
+ * Created on 2016-06-19.
  */
 public class ParseRequestPayload {
     String text;
