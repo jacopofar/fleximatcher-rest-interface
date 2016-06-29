@@ -5,6 +5,7 @@ import com.github.jacopofar.fleximatcher.FlexiMatcher;
 import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
+import com.github.jacopofar.fleximatcherwebinterface.annotators.HTTPRuleFactory;
 import com.github.jacopofar.fleximatcherwebinterface.messages.AnnotatorPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
@@ -14,6 +15,7 @@ import spark.Response;
 
 import javax.servlet.ServletOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedList;
 
 import static spark.Spark.*;
@@ -151,9 +153,8 @@ public class Fwi {
                 return "invalid request body. Errors: " + newPost.errorMessages() ;
             }
             System.out.println("NEW ANNOTATOR TO BE CREATED: " + newPost.toString());
-            //TODO add the HTTP annotator using fm.bind
-
-
+            fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint())));
+            return("annotator added");
         });
 
         /**
