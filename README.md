@@ -10,6 +10,7 @@ The following functions are to be implemented:
 
 * parse a text and return the corresponding annotations ✓
 * add new annotations ✓
-* define annotations using HTTP (with Apache Stanbol? Apparently is not developed anymore) ☐
-* return statistics on the average parse duration and the usage of the tool ☐
+* define annotations using HTTP ✓
+* explicitly explain all the steps leading to a parse result ☐
+* return statistics on the average parse duration and the usage of the different tags ☐
 * define parsers using Javascript ☐
