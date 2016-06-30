@@ -3,7 +3,7 @@ package com.github.jacopofar.fleximatcherwebinterface.messages;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Created by utente on 2016-06-29.
+ * Created on 2016-06-29.
  */
 public class AnnotationPayload {
         Integer start;

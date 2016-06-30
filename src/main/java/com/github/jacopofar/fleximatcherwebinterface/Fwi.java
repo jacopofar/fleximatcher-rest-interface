@@ -17,12 +17,13 @@ import javax.servlet.ServletOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static spark.Spark.*;
 
 public class Fwi {
     private static FlexiMatcher fm;
-    private static int tagCount=0;
+    private static  ConcurrentHashMap<String,AnnotatorPayload> annotators=new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException {
 
@@ -64,6 +65,7 @@ public class Fwi {
             JSONObject retVal = new JSONObject();
             long start=System.currentTimeMillis();
             results = fm.matches(text, pattern, FlexiMatcher.getDefaultAnnotator(), true, false, true);
+
             retVal.put("time_to_parse", System.currentTimeMillis()-start);
             retVal.put("is_matching", results.isMatching());
             retVal.put("empty_match", results.isEmptyMatch());
@@ -142,19 +144,29 @@ public class Fwi {
             return sendJSON(response, retVal);
         });
 
-/**
- * Add a new annotator
- * */
+        /**
+         * Add a new annotator
+         * */
         put("/rules/:rulename", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
             AnnotatorPayload newPost = mapper.readValue(request.body(), AnnotatorPayload.class);
             if(newPost.errorMessages().size() != 0){
                 response.status(400);
-                return "invalid request body. Errors: " + newPost.errorMessages() ;
+                return "invalid request body. Errors: " + newPost.errorMessages();
             }
             System.out.println("NEW ANNOTATOR TO BE CREATED: " + newPost.toString());
-            fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint())));
-            return("annotator added");
+            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint())));
+            annotators.put(request.params(":rulename"), newPost);
+            return(replaced ? "annotator updated": "annotator added");
+        });
+
+        /**
+         * Retrieve annotator details
+         * */
+        get("/rules/:rulename", (request, response) -> {
+            response.type("application/json");
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(annotators.get(request.params(":rulename")));
         });
 
         /**
@@ -224,6 +236,40 @@ public class Fwi {
             os.flush();
             os.close();
             return response.raw();
+        });
+
+        /**
+         * Explains with a human-readable text how an interpretation was given
+         * */
+        post("/parse_explain", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            ParseRequestPayload parseRequest = mapper.readValue(request.body(), ParseRequestPayload.class);
+            if(parseRequest.errorMessages().size() != 0){
+                response.status(400);
+                return "invalid request body. Errors: " + parseRequest.errorMessages() ;
+            }
+            System.out.println("PARSE REQUEST: " + parseRequest.toString());
+            MatchingResults results;
+            JSONObject retVal = new JSONObject();
+            long start=System.currentTimeMillis();
+            //the flags are: fullyAnnotate,  matchWhole, populateResult
+
+            results = fm.matches(parseRequest.getText(),parseRequest.getPattern(),FlexiMatcher.getDefaultAnnotator(), true, parseRequest.isMatchWhole(), true);
+
+            retVal.put("time_to_parse", System.currentTimeMillis()-start);
+            retVal.put("is_matching", results.isMatching());
+            retVal.put("empty_match", results.isEmptyMatch());
+            if(results.isMatching()){
+                for(LinkedList<TextAnnotation> interpretation:results.getAnnotations().get()){
+                    JSONObject addMe = new JSONObject();
+
+                    for(TextAnnotation v:interpretation){
+                        addMe.append("annotations", new JSONObject(v.toJSON()));
+                    }
+                    retVal.append("interpretations", addMe);
+                }
+            }
+            return sendJSON(response, retVal);
         });
     }
 
