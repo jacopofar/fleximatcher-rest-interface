@@ -254,7 +254,7 @@ public class Fwi {
             long start=System.currentTimeMillis();
             //the flags are: fullyAnnotate,  matchWhole, populateResult
 
-            results = fm.matches(parseRequest.getText(),parseRequest.getPattern(),FlexiMatcher.getDefaultAnnotator(), true, parseRequest.isMatchWhole(), true);
+            results = fm.matches(parseRequest.getText(),parseRequest.getPattern(),FlexiMatcher.getDefaultAnnotator(true), true, parseRequest.isMatchWhole(), true);
 
             retVal.put("time_to_parse", System.currentTimeMillis()-start);
             retVal.put("is_matching", results.isMatching());
