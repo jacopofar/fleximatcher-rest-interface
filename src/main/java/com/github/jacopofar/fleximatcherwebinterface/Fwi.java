@@ -31,7 +31,7 @@ public class Fwi {
     public static void main(String[] args) throws IOException {
         System.out.println("Keeping track of number of cores and free RAM on stat server...");
         try {
-            HttpResponse<String> response = Unirest.get("https://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
+            HttpResponse<String> response = Unirest.get("http://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
                     .header("content-type", "application/json")
                     .asString();
         } catch (UnirestException e) {
@@ -164,7 +164,7 @@ public class Fwi {
                 return "invalid request body. Errors: " + newPost.errorMessages();
             }
             System.out.println("NEW ANNOTATOR TO BE CREATED: " + newPost.toString());
-            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint())));
+            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint()), new URL(newPost.getSampler_endpoint())));
             annotators.put(request.params(":rulename"), newPost);
             return(replaced ? "annotator updated": "annotator added");
         });
@@ -280,6 +280,21 @@ public class Fwi {
             }
             return sendJSON(response, retVal);
         });
+
+
+
+        post("/generate", (request, response) -> {
+            String pattern = new JSONObject(request.body()).getString("pattern");
+
+            System.out.println("REQUEST TO GENERATE SAMPLE FOR: " + pattern);
+            JSONObject retVal = new JSONObject();
+            long start=System.currentTimeMillis();
+            String sample = fm.generateSample(pattern);
+            retVal.put("time_to_generate", System.currentTimeMillis()-start);
+            retVal.put("sample", sample);
+            return sendJSON(response, retVal);
+        });
+
     }
 
     private static String sendJSON(Response r, JSONObject obj) {
