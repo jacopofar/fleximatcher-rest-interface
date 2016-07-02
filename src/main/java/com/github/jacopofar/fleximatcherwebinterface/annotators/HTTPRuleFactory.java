@@ -20,4 +20,10 @@ public class HTTPRuleFactory implements RuleFactory {
     public MatchingRule getRule(String parameter) {
         return new HTTPRule(url, parameter);
     }
+
+    @Override
+    public String generateSample(String parameter) {
+        //TODO call the generate sample URL if provided
+        return null;
+    }
 }
