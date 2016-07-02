@@ -12,6 +12,7 @@ The following functions are to be implemented:
 * add new annotations ✓
 * define annotations using HTTP ✓
 * explicitly explain all the steps leading to a parse result ✓
+* generate text from patterns ✓
 * give said steps in a human-readable report (not a JSON) ☐
 * return statistics on the average parse duration and the usage of the different tags ☐
 * define parsers using Javascript ☐
