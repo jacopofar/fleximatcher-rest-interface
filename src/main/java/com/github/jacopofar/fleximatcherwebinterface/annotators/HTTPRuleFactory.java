@@ -2,6 +2,9 @@ package com.github.jacopofar.fleximatcherwebinterface.annotators;
 
 import com.github.jacopofar.fleximatcher.rule.RuleFactory;
 import com.github.jacopofar.fleximatcher.rules.MatchingRule;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONObject;
 
 import java.net.URL;
 
@@ -11,9 +14,11 @@ import java.net.URL;
 public class HTTPRuleFactory implements RuleFactory {
 
     private final URL url;
+    private final URL samplerUrl;
 
-    public HTTPRuleFactory(URL url) {
-        this.url = url;
+    public HTTPRuleFactory(URL annotatorUrl, URL samplerUrl) {
+        this.url = annotatorUrl;
+        this.samplerUrl = samplerUrl;
     }
 
     @Override
@@ -23,7 +28,16 @@ public class HTTPRuleFactory implements RuleFactory {
 
     @Override
     public String generateSample(String parameter) {
-        //TODO call the generate sample URL if provided
-        return null;
+        if (this.samplerUrl == null)
+            return null;
+        try {
+            return Unirest.post(samplerUrl.toString())
+                    .header("content-type", "application/json")
+                    .body("{\"parameter\":" + JSONObject.quote(parameter) +  "}")
+                    .asString().getBody();
+        } catch (UnirestException e) {
+            e.printStackTrace();
+            throw new RuntimeException("error generating sample from external annotator",e);
+        }
     }
 }

@@ -6,11 +6,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created on 2016-06-28.
+ * Describes a new HTTP annotator
  */
 public class AnnotatorPayload {
     String endpoint;
     String api_key;
+    String sampler_endpoint;
+
+    public String getSampler_endpoint() {
+        return sampler_endpoint;
+    }
+
+    public void setSampler_endpoint(String sampler_endpoint) {
+        this.sampler_endpoint = sampler_endpoint;
+    }
 
     public String getApi_key() {
         return api_key;

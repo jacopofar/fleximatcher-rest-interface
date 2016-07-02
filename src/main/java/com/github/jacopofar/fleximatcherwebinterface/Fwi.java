@@ -29,9 +29,9 @@ public class Fwi {
     private static  ConcurrentHashMap<String,AnnotatorPayload> annotators=new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Pinging stat server...");
+        System.out.println("Keeping track of number of cores and free RAM on stat server...");
         try {
-            HttpResponse<String> response = Unirest.get("http://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
+            HttpResponse<String> response = Unirest.get("https://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
                     .header("content-type", "application/json")
                     .asString();
         } catch (UnirestException e) {
@@ -61,7 +61,6 @@ public class Fwi {
             //show the exceptions using stdout
             System.out.println("Exception:");
             exception.printStackTrace(System.out);
-
             response.body(exception.getMessage());
         });
 
