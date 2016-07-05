@@ -14,6 +14,6 @@ The following functions are to be implemented:
 * generate text from patterns ✓
 * explicitly explain all the steps leading to a parse result ✓
 * give said steps in a human-readable report (not a JSON) ☐
-* export and import all the rules in a single file ☐
+* export and import all the rules in a single file ✓
 * return statistics on the average parse duration and the usage of the different tags ☐
 * define parsers using Javascript ☐
