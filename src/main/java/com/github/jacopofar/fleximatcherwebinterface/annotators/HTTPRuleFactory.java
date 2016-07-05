@@ -31,10 +31,12 @@ public class HTTPRuleFactory implements RuleFactory {
         if (this.samplerUrl == null)
             return null;
         try {
-            return Unirest.post(samplerUrl.toString())
+            String result = Unirest.post(samplerUrl.toString())
                     .header("content-type", "application/json")
                     .body("{\"parameter\":" + JSONObject.quote(parameter) +  "}")
                     .asString().getBody();
+            //The empty string is the way an HTTP annotator tells it failed to generate an utterance. Use null
+            return result.isEmpty() ? null : result;
         } catch (UnirestException e) {
             e.printStackTrace();
             throw new RuntimeException("error generating sample from external annotator",e);
