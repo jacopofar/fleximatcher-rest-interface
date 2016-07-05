@@ -7,6 +7,7 @@ import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
 import com.github.jacopofar.fleximatcherwebinterface.annotators.HTTPRuleFactory;
 import com.github.jacopofar.fleximatcherwebinterface.messages.AnnotatorPayload;
+import com.github.jacopofar.fleximatcherwebinterface.messages.CompleteTagPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
 import com.mashape.unirest.http.HttpResponse;
@@ -20,6 +21,7 @@ import javax.servlet.ServletOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static spark.Spark.*;
@@ -232,6 +234,8 @@ public class Fwi {
                     JSONObject jo = new JSONObject();
                     jo.put("id", td.getIdentifier());
                     jo.put("pattern", td.getPattern());
+                    if(td.getAnnotationExpression() != null)
+                        jo.put("annotation", td.getAnnotationExpression());
                     os.write(jo.toString().getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -295,6 +299,54 @@ public class Fwi {
             return sendJSON(response, retVal);
         });
 
+        get("/export_full", (request, response) -> {
+            response.type("application/json");
+
+            ServletOutputStream os = response.raw().getOutputStream();
+            os.write("[".getBytes());
+            final boolean[] first = {true};
+            fm.getTagNames().forEach(tagName -> {
+                fm.getTagDefinitions(tagName).forEach( td -> {
+                    try {
+                        if(!first[0]) os.write(",".getBytes());
+                        first[0] = false;
+                        JSONObject jo = new JSONObject();
+                        jo.put("tag_name", tagName);
+                        jo.put("id", td.getIdentifier());
+                        jo.put("pattern", td.getPattern());
+                        if(td.getAnnotationExpression() != null)
+                            jo.put("annotation", td.getAnnotationExpression());
+                        os.write(jo.toString().getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        //can never happen, key is hardcoded and not null
+                        e.printStackTrace();
+                    }
+                });
+            });
+
+            os.write("]".getBytes());
+
+            os.flush();
+            os.close();
+            return response.raw();
+        });
+
+        post("/import_full", (request, response) -> {
+            ObjectMapper mapper = new ObjectMapper();
+            List<CompleteTagPayload> tagsToImport = mapper.readValue(request.body(), mapper.getTypeFactory().constructCollectionType(List.class, CompleteTagPayload.class));
+            LinkedList<String> overWritten = new LinkedList<String>();
+            for(CompleteTagPayload newTag: tagsToImport){
+                if(fm.addTagRule(newTag.getTag_name(), newTag.getPattern(), newTag.getId(), newTag.getAnnotation()))
+                    overWritten.add(newTag.getTag_name() + "/" + newTag.getId());
+            }
+            JSONObject retVal = new JSONObject();
+            retVal.put("imported", tagsToImport.size());
+            retVal.put("overwritten", overWritten);
+            return sendJSON(response, retVal);
+
+        });
     }
 
     private static String sendJSON(Response r, JSONObject obj) {
