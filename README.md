@@ -1,7 +1,26 @@
 Fleximatecher HTTP interface
 ============================
 
-This project aims to provide a comfortable interface to the Fleximatcher top down parser.
+A parser/annotator completely accessible through a REST interface, allowing grammar rules to be changed on the fly.
+
+It lets you:
+
+* match substrings and have partial matches
+* enrich the text with arbitrary annotations
+* define your own annotators/grammar rules as HTTP services (WordNet, etc.)
+* get explanations for a parsing result
+* generate text for a given pattern
+* add, delete and list the grammar rules and the annotators at runtime
+* work on UTF-8 text
+
+and it's already on Docker Hub.
+
+How to use
+----------
+In this example, we'll build a toy parser to identify room reservation requests.
+
+TODO write it
+
 
 Roadmap
 -------
