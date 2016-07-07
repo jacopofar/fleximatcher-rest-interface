@@ -31,7 +31,7 @@ public class Fwi {
     private static  ConcurrentHashMap<String,AnnotatorPayload> annotators=new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Keeping track of number of cores and free RAM on stat server...");
+        System.out.println("Keeping track of number of cores and RAM on stat server...");
         try {
             HttpResponse<String> response = Unirest.get("http://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
                     .header("content-type", "application/json")
@@ -53,7 +53,7 @@ public class Fwi {
 
 
 
-        staticFiles.externalLocation("static");
+        //staticFiles.externalLocation("static");
 
         //staticFiles.externalLocation("/static");
         //  port(5678); <- Uncomment this if you want spark to listen to port 5678 in stead of the default 4567
@@ -61,10 +61,23 @@ public class Fwi {
         //show exceptions in console and HTTP responses
         exception(Exception.class, (exception, request, response) -> {
             //show the exceptions using stdout
-            System.out.println("Exception:");
+            System.out.println("Exception dealing with " + request.requestMethod() + " " + request.contextPath());
             exception.printStackTrace(System.out);
             response.body(exception.getMessage());
         });
+
+        //show each requested path in the console
+        after((request, response) -> {
+            //TODO currently not working, waiting for this merge to appear in Maven:
+            //https://github.com/perwendel/spark/pull/579
+            /*
+            System.out.println(ZonedDateTime.now().format( DateTimeFormatter.ISO_INSTANT)
+                    + " \t " + request.requestMethod()
+                    + " \t " + request.pathInfo()
+                    + " \t " + response.status()
+                    + " \t " + response.body().length());*/
+        });
+
 
         get("/parse", (request, response) -> {
 
@@ -184,6 +197,10 @@ public class Fwi {
          * Delete a specific tag rule
          * */
         delete("/tags/:tagname/:tag_identifier", (request, response) -> {
+            if(!fm.getTagNames().anyMatch(n -> n.equals(request.params(":tagname")))){
+                response.status(404);
+                return "tag " + request.params(":tagname") + " unknown";
+            }
             if(fm.removeTagRule(request.params(":tagname"), request.params(":tag_identifier"))){
                 response.status(200);
                 return "rule removed";

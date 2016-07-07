@@ -11,13 +11,24 @@ It lets you:
 * get explanations for a parsing result
 * generate text for a given pattern
 * add, delete and list the grammar rules and the annotators at runtime
-* work on UTF-8 text
+* match Unicode characters, including of course emojis 😌
+* work with spaceless languages, as the parser itself is language-agnostic
 
-and it's already on Docker Hub.
+it's free and ready for use on Docker Hub.
 
 How to use
 ----------
-In this example, we'll build a toy parser to identify room reservation requests.
+In this example, we'll build a toy parser to identify XXX requests, like:
+
+    TODO insert an example here!!
+
+First, run the application. I warmly suggest to use Docker:
+
+     docker run -p 4567:4567 jacopofar/fleximatcher-web-interface
+
+Note that when booting the application will send the number of CPU cores and the total RAM to a stat server.
+The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the parsing library).
+
 
 TODO write it
 
@@ -25,7 +36,7 @@ TODO write it
 Roadmap
 -------
 
-The following functions are to be implemented:
+The following functions are ready or to be implemented:
 
 * parse a text and return the corresponding annotations ✓
 * add new annotations ✓
