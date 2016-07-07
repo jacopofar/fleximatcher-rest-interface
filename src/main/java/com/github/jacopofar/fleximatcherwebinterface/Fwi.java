@@ -6,6 +6,7 @@ import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
 import com.github.jacopofar.fleximatcherwebinterface.annotators.HTTPRuleFactory;
+import com.github.jacopofar.fleximatcherwebinterface.exceptions.RuntimeJSONCarryingException;
 import com.github.jacopofar.fleximatcherwebinterface.messages.AnnotatorPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.CompleteTagPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
@@ -16,7 +17,6 @@ import spark.Response;
 
 import javax.servlet.ServletOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,12 +31,7 @@ public class Fwi {
         System.out.println("Starting matcher...");
         fm = new FlexiMatcher();
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
-        /*
-        fm.bind("it-pos", new ItPosRuleFactory(im));
-        fm.bind("it-token", new ItTokenRuleFactory(im));
-        fm.bind("it-verb-conjugated", new ItSpecificVerbRuleFactory(im));
-        fm.bind("it-verb-form", new ItVerbFormRuleFactory(im));
-        */
+
         String fname="rule_list.tsv";
         FileTagLoader.readTagsFromTSV(fname, fm);
 
@@ -52,7 +47,15 @@ public class Fwi {
             //show the exceptions using stdout
             System.out.println("Exception dealing with " + request.requestMethod() + " " + request.contextPath());
             exception.printStackTrace(System.out);
-            response.body(exception.getMessage());
+            response.status(400);
+            if(exception instanceof RuntimeJSONCarryingException){
+                response.type("application/json; charset=utf-8");
+                response.body(exception.toString());
+                return;
+            }
+            response.type("application/json; charset=utf-8");
+            response.body(exception.toString());
+
         });
 
         //show each requested path in the console
@@ -167,10 +170,10 @@ public class Fwi {
                 response.status(400);
                 return "invalid request body. Errors: " + newPost.errorMessages();
             }
-            System.out.println("NEW ANNOTATOR TO BE CREATED: " + newPost.toString());
-            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(new URL(newPost.getEndpoint()), new URL(newPost.getSampler_endpoint())));
+            System.out.println("Creating annotator for: " + newPost.toString());
+            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(newPost.getEndpoint(), newPost.getSampler_endpoint()));
             annotators.put(request.params(":rulename"), newPost);
-            return(replaced ? "annotator updated": "annotator added");
+            return (replaced ? "annotator updated": "annotator added") + " for rule " + request.params(":rulename");
         });
 
         /**

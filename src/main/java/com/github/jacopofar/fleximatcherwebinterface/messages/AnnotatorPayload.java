@@ -13,6 +13,15 @@ public class AnnotatorPayload {
     String api_key;
     String sampler_endpoint;
 
+    @Override
+    public String toString() {
+        return "AnnotatorPayload{" +
+                "endpoint='" + endpoint + '\'' +
+                ", api_key='" + api_key + '\'' +
+                ", sampler_endpoint='" + sampler_endpoint + '\'' +
+                '}';
+    }
+
     public String getSampler_endpoint() {
         return sampler_endpoint;
     }

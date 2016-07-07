@@ -2,6 +2,7 @@ package com.github.jacopofar.fleximatcherwebinterface.annotators;
 
 import com.github.jacopofar.fleximatcher.annotations.AnnotationHandler;
 import com.github.jacopofar.fleximatcher.rules.MatchingRule;
+import com.github.jacopofar.fleximatcherwebinterface.exceptions.RuntimeJSONCarryingException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -35,6 +36,10 @@ public class HTTPRule extends MatchingRule {
                     .header("content-type", "application/json")
                     .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + "}")
                     .asJson();
+            if(response.getBody().getObject().has("error")){
+                System.err.println("the external annotator gave an HTTP error: " + response.getBody().getObject().get("error").toString());
+                throw new RuntimeJSONCarryingException("Error from the external annotator", response.getBody().getObject());
+            }
             JSONArray annotations = response.getBody().getObject().getJSONArray("annotations");
 
             for(int i = 0 ; i < annotations.length(); i++){

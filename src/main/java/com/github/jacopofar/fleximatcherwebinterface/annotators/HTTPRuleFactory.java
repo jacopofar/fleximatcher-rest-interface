@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -14,11 +15,12 @@ import java.net.URL;
 public class HTTPRuleFactory implements RuleFactory {
 
     private final URL url;
-    private final URL samplerUrl;
+    private URL samplerUrl;
 
-    public HTTPRuleFactory(URL annotatorUrl, URL samplerUrl) {
-        this.url = annotatorUrl;
-        this.samplerUrl = samplerUrl;
+    public HTTPRuleFactory(String annotatorUrl, String samplerUrl) throws MalformedURLException {
+        this.url = new URL(annotatorUrl);
+        if(samplerUrl != null)
+            this.samplerUrl = new URL(samplerUrl);
     }
 
     @Override
