@@ -10,9 +10,6 @@ import com.github.jacopofar.fleximatcherwebinterface.messages.AnnotatorPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.CompleteTagPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.ParseRequestPayload;
 import com.github.jacopofar.fleximatcherwebinterface.messages.TagRulePayload;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import spark.Response;
@@ -31,14 +28,6 @@ public class Fwi {
     private static  ConcurrentHashMap<String,AnnotatorPayload> annotators=new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Keeping track of number of cores and RAM on stat server...");
-        try {
-            HttpResponse<String> response = Unirest.get("http://168.235.144.45/sizestats/" + Runtime.getRuntime().availableProcessors() + "_" + Runtime.getRuntime().maxMemory())
-                    .header("content-type", "application/json")
-                    .asString();
-        } catch (UnirestException e) {
-            e.printStackTrace();
-        }
         System.out.println("Starting matcher...");
         fm = new FlexiMatcher();
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");

@@ -26,7 +26,6 @@ First, run the application. I warmly suggest to use Docker:
 
      docker run -p 4567:4567 jacopofar/fleximatcher-web-interface
 
-Note that when booting the application will send the number of CPU cores and the total RAM to a stat server.
 The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the parsing library).
 
 
