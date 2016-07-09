@@ -2,8 +2,11 @@ package com.github.jacopofar.fleximatcherwebinterface.annotators;
 
 import com.github.jacopofar.fleximatcher.rule.RuleFactory;
 import com.github.jacopofar.fleximatcher.rules.MatchingRule;
+import com.github.jacopofar.fleximatcherwebinterface.exceptions.RuntimeJSONCarryingException;
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -33,12 +36,26 @@ public class HTTPRuleFactory implements RuleFactory {
         if (this.samplerUrl == null)
             return null;
         try {
-            String result = Unirest.post(samplerUrl.toString())
+            HttpResponse<String> response = Unirest.post(samplerUrl.toString())
                     .header("content-type", "application/json")
                     .body("{\"parameter\":" + JSONObject.quote(parameter) +  "}")
-                    .asString().getBody();
+                    .asString();
+            if(response.getStatus() != 200){
+                JSONObject errObj = new JSONObject();
+                try {
+                    errObj.put("http_status",response.getStatus());
+                    errObj.put("endpoint",samplerUrl.toString());
+                    errObj.put("error_body",response.getBody());
+                } catch (JSONException e) {
+                    //can never happen...
+                    e.printStackTrace();
+                }
+                throw new RuntimeJSONCarryingException("Error from the external annotator", errObj);
+
+
+            }
             //The empty string is the way an HTTP annotator tells it failed to generate an utterance. Use null
-            return result.isEmpty() ? null : result;
+            return response.getBody().isEmpty() ? null : response.getBody();
         } catch (UnirestException e) {
             e.printStackTrace();
             throw new RuntimeException("error generating sample from external annotator",e);
