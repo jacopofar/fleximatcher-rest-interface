@@ -18,15 +18,17 @@ it's free and ready for use on Docker Hub.
 
 How to use
 ----------
-In this example, we'll build a toy parser to identify XXX requests, like:
+In this example, we'll build a parser to identify common interactions in an IRC chat, like:
 
-    TODO insert an example here!!
+    Steve slaps Sam around a bit with a large trout
+    Hello!
+    I quit, see ya
 
 First, run the application. I warmly suggest to use Docker:
 
      docker run -p 4567:4567 jacopofar/fleximatcher-web-interface
 
-The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the parsing library).
+The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the actual parsing library).
 
 
 TODO write it

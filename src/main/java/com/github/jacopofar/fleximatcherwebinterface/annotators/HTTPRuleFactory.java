@@ -6,6 +6,7 @@ import com.github.jacopofar.fleximatcherwebinterface.exceptions.RuntimeJSONCarry
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,12 +52,22 @@ public class HTTPRuleFactory implements RuleFactory {
                     e.printStackTrace();
                 }
                 throw new RuntimeJSONCarryingException("Error from the external annotator", errObj);
-
-
             }
             //The empty string is the way an HTTP annotator tells it failed to generate an utterance. Use null
             return response.getBody().isEmpty() ? null : response.getBody();
         } catch (UnirestException e) {
+            if(e.getCause() instanceof HttpHostConnectException){
+                e.printStackTrace();
+                JSONObject errObj = new JSONObject();
+                try {
+                    errObj.put("error_message",e.getCause().getMessage());
+                    errObj.put("endpoint",samplerUrl.toString());
+                } catch (JSONException jex) {
+                    //can never happen...
+                    jex.printStackTrace();
+                }
+                throw new RuntimeJSONCarryingException("Error communicating with the external annotator", errObj);
+            }
             e.printStackTrace();
             throw new RuntimeException("error generating sample from external annotator",e);
         }
