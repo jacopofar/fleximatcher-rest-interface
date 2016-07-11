@@ -1,4 +1,4 @@
-package com.github.jacopofar.fleximatcherwebinterface.messages;
+package com.github.jacopofar.fleximatcherrestbinterface.messages;
 
 /**
  * Created on 2016-06-17.

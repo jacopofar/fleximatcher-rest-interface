@@ -1,4 +1,4 @@
-package com.github.jacopofar.fleximatcherwebinterface.messages;
+package com.github.jacopofar.fleximatcherrestbinterface.messages;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 

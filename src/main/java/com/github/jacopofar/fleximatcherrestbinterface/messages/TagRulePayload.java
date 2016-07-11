@@ -1,4 +1,4 @@
-package com.github.jacopofar.fleximatcherwebinterface.messages;
+package com.github.jacopofar.fleximatcherrestbinterface.messages;
 
 import java.util.LinkedList;
 

@@ -4,8 +4,8 @@
     <groupId>com.github.jacopofar.fwi</groupId>
     <artifactId>fwi</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>fwi</name>
-    <description>A DRAFT of a Fleximatcher web service</description>
+    <name>fri</name>
+    <description>Fleximatcher REST interface</description>
     <build>
         <plugins>
             <plugin>
@@ -51,7 +51,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <configuration>
-                    <mainClass>com.github.jacopofar.fleximatcherwebinterface.Fwi</mainClass>
+                    <mainClass>com.github.jacopofar.fleximatcherrestbinterface.Fri</mainClass>
                 </configuration>
             </plugin>
 

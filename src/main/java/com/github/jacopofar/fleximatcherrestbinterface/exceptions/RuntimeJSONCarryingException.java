@@ -1,4 +1,4 @@
-package com.github.jacopofar.fleximatcherwebinterface.exceptions;
+package com.github.jacopofar.fleximatcherrestbinterface.exceptions;
 
 import org.json.JSONObject;
 
