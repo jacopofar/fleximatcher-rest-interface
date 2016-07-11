@@ -35,6 +35,19 @@ public class Fwi {
         String fname="rule_list.tsv";
         FileTagLoader.readTagsFromTSV(fname, fm);
 
+        if(System.getenv("FRI_API_KEY") != null){
+            String apiKey = System.getenv("FRI_API_KEY");
+            System.out.println("the apiKey in X-FRI-API-KEY will have to be '" + apiKey + "'");
+            before((request, response) -> {
+                if(!apiKey.equals(request.headers("X-FRI-API-KEY"))){
+                    System.out.println("refused a " + request.requestMethod() + " to " + request.pathInfo() + " due to a wrong or missing X-FRI-API-KEY header. It was " + request.headers("X-FRI-API-KEY"));
+                    halt(401, "wrong or missing X-FRI-API-KEY header");
+                }
+            });
+        }
+        else {
+            System.out.println("no FRI_API_KEY environment variable, any request will be accepted");
+        }
 
 
         //staticFiles.externalLocation("static");
@@ -143,7 +156,6 @@ public class Fwi {
             //the flags are: fullyAnnotate,  matchWhole, populateResult
 
             results = fm.matches(parseRequest.getText(),parseRequest.getPattern(),FlexiMatcher.getDefaultAnnotator(), parseRequest.isFullyAnnotate(), parseRequest.isMatchWhole(), parseRequest.isPopulateResult());
-
             retVal.put("time_to_parse", System.currentTimeMillis()-start);
             retVal.put("is_matching", results.isMatching());
             retVal.put("empty_match", results.isEmptyMatch());
