@@ -7,12 +7,12 @@ It lets you:
 
 * match substrings and have partial matches
 * enrich the text with arbitrary annotations
-* define your own annotators/grammar rules as HTTP services (WordNet, etc.)
+* define your own annotators/grammar rules as HTTP services (WordNet, POS taggers, etc.)
 * get explanations for a parsing result
-* generate text for a given pattern
+* generate a sample text for a given pattern
 * add, delete and list the grammar rules and the annotators at runtime
 * match Unicode characters, including of course emojis 😌
-* work with spaceless languages, as the parser itself is language-agnostic
+* work with spaceless languages (e.g. Chinese), as the parser itself is language-agnostic
 
 it's free and ready for use on Docker Hub.
 
@@ -26,12 +26,12 @@ In this example, we'll build a parser to identify common interactions in an IRC 
 
 First, run the application. I warmly suggest to use Docker:
 
-     docker run -p 4567:4567 jacopofar/fleximatcher-web-interface
+     docker run -p 4567:4567 jacopofar/fleximatcher-rest-interface
 
 The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the actual parsing library).
 
 
-TODO write it
+TODO write it :)
 
 
 Roadmap
