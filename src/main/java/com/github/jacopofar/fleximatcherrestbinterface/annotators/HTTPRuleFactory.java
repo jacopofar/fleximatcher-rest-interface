@@ -19,17 +19,18 @@ import java.net.URL;
 public class HTTPRuleFactory implements RuleFactory {
 
     private final URL url;
-    private URL samplerUrl;
+    private final URL samplerUrl;
+    private final String apiKey;
 
-    public HTTPRuleFactory(String annotatorUrl, String samplerUrl) throws MalformedURLException {
+    public HTTPRuleFactory(String annotatorUrl, String samplerUrl, String apiKey) throws MalformedURLException {
         this.url = new URL(annotatorUrl);
-        if(samplerUrl != null)
-            this.samplerUrl = new URL(samplerUrl);
+        this.samplerUrl = samplerUrl == null ? null : new URL(samplerUrl);
+        this.apiKey = apiKey;
     }
 
     @Override
     public MatchingRule getRule(String parameter) {
-        return new HTTPRule(url, parameter);
+        return new HTTPRule(url, parameter, apiKey);
     }
 
     @Override
@@ -37,10 +38,21 @@ public class HTTPRuleFactory implements RuleFactory {
         if (this.samplerUrl == null)
             return null;
         try {
-            HttpResponse<String> response = Unirest.post(samplerUrl.toString())
-                    .header("content-type", "application/json")
-                    .body("{\"parameter\":" + JSONObject.quote(parameter) +  "}")
-                    .asString();
+            HttpResponse<String> response;
+            if(apiKey != null){
+                response = Unirest.post(samplerUrl.toString())
+                        .header("content-type", "application/json")
+                        .header("X-API-KEY", apiKey)
+                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  ", \"api_key\":" + JSONObject.quote(apiKey) +  "}")
+                        .asString();
+
+            }
+            else{
+                response = Unirest.post(samplerUrl.toString())
+                        .header("content-type", "application/json")
+                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  "}")
+                        .asString();
+            }
             if(response.getStatus() != 200){
                 JSONObject errObj = new JSONObject();
                 try {

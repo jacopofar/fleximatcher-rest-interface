@@ -21,21 +21,35 @@ public class HTTPRule extends MatchingRule {
 
     private final URL endpoint;
     private final String parameter;
+    private final String apiKey;
 
-    public HTTPRule(URL endpoint, String parameter) {
+    public HTTPRule(URL endpoint, String parameter, String apiKey) {
         super();
         this.endpoint = endpoint;
         this.parameter = parameter;
+        this.apiKey = apiKey;
     }
 
     @Override
     public boolean annotate(String text, AnnotationHandler ah) {
         boolean totalMatch = false;
         try {
-            HttpResponse<JsonNode> response = Unirest.post(endpoint.toString())
-                    .header("content-type", "application/json")
-                    .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + "}")
-                    .asJson();
+            HttpResponse<JsonNode> response;
+            if(apiKey == null){
+                response = Unirest.post(endpoint.toString())
+                        .header("content-type", "application/json")
+                        .header("X-API-KEY", apiKey)
+                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + ", \"api_key\":\" + JSONObject.quote(apiKey) +  \"}")
+                        .asJson();
+
+            }
+            else{
+                response = Unirest.post(endpoint.toString())
+                        .header("content-type", "application/json")
+                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + "}")
+                        .asJson();
+
+            }
             if(response.getBody().getObject().has("error")){
                 System.err.println("the external annotator gave an HTTP error: " + response.getBody().getObject().get("error").toString());
                 throw new RuntimeJSONCarryingException("Error from the external annotator", response.getBody().getObject());
