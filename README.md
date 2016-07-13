@@ -18,11 +18,11 @@ it's free and ready for use on Docker Hub.
 
 How to use
 ----------
-In this example, we'll build a parser to identify common interactions in an IRC chat, like:
+In this example, we'll build a parser to parse directions, like:
+* continue straight for 3 kilometres
+* turn the third turning to the left
+* turn right at the drugstore and walk to the coffee shop across the street
 
-    Steve slaps Sam around a bit with a large trout
-    Hello!
-    I quit, see ya
 
 First, run the application. I warmly suggest to use Docker:
 
