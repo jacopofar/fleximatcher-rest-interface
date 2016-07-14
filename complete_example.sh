@@ -15,4 +15,6 @@ else
     echo "something went wrong starting the container. Is Docker installed and can be used by this user?"
 fi
 
+curl -X POST -H "Content-Type: application/json" -d '{"pattern":"turn right","annotationTemplate":"{turn:'"'"'right'}"}' "http://localhost:4567/tags/turn"
+
 
