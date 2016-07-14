@@ -18,17 +18,20 @@ it's free and ready for use on Docker Hub.
 
 How to use
 ----------
-In this example, we'll build a parser to parse directions, like:
-* continue straight for 3 kilometres
-* turn the third turning to the left
-* turn right at the drugstore and walk to the coffee shop across the street
+In this example, we'll build an annotator for recipe procedures, like:
+* Boil the sugar, water, lemon and crushed ginger for 15 minutes.
+* Strain the mixture and let it cool.
+* Mix in the yeast and let the mixture ferment for two days
+* Put the drink in bottles and add a raisin to each bottle.
 
+for each step let's detect the subject, the action, the tools and additional parameters (time, temperature).
 
 First, run the application. I warmly suggest to use Docker:
 
      docker run -p 4567:4567 jacopofar/fleximatcher-rest-interface
 
 The alternative is to use Maven and follow the `Dockerfile` instructions to build it upon Fleximatcher (the actual parsing library).
+
 
 
 TODO write it :)
