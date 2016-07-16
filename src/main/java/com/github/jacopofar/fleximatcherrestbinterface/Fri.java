@@ -66,7 +66,6 @@ public class Fri {
                 response.body(exception.toString());
                 return;
             }
-            response.type("application/json; charset=utf-8");
             response.body(exception.toString());
 
         });
@@ -83,7 +82,7 @@ public class Fri {
                     + " \t " + response.body().length());*/
         });
 
-
+/* old code, used by the old interface
         get("/parse", (request, response) -> {
 
             String text = request.queryMap().get("text").value();
@@ -109,7 +108,7 @@ public class Fri {
             return sendJSON(response, retVal);
 
         });
-
+*/
 
         put("/tags/:tagname/:tag_identifier", (request, response) -> {
             ObjectMapper mapper = new ObjectMapper();
@@ -183,7 +182,7 @@ public class Fri {
                 return "invalid request body. Errors: " + newPost.errorMessages();
             }
             System.out.println("Creating annotator for: " + newPost.toString());
-            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(newPost.getEndpoint(), newPost.getSampler_endpoint()));
+            boolean replaced = fm.bind(request.params(":rulename"), new HTTPRuleFactory(newPost.getEndpoint(), newPost.getSampler_endpoint(), null));
             annotators.put(request.params(":rulename"), newPost);
             return (replaced ? "annotator updated": "annotator added") + " for rule " + request.params(":rulename");
         });

@@ -14,7 +14,12 @@ if docker run --name=worndet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a
 else
     echo "something went wrong starting the container. Is Docker installed and can be used by this user?"
 fi
+#only for the example, otherwise run curl until the endpoints are up
+echo "giving the Docker containers some time to ensure they are listening..."
+sleep 10
+#label 'water' as [tag:ingredient]
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"water",
+"annotationTemplate":"{ingredient:\"water\"}"}' "http://localhost:4567/tags/ingredient"
 
-curl -X POST -H "Content-Type: application/json" -d '{"pattern":"turn right","annotationTemplate":"{turn:'"'"'right'}"}' "http://localhost:4567/tags/turn"
 
 
