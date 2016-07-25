@@ -16,10 +16,22 @@ else
 fi
 #only for the example, otherwise run curl until the endpoints are up
 echo "giving the Docker containers some time to ensure they are listening..."
+
 sleep 10
+
 #label 'water' as [tag:ingredient]
-curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"water",
-"annotationTemplate":"{ingredient:\"water\"}"}' "http://localhost:4567/tags/ingredient"
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"water", "annotationTemplate":"{ingredient:\"water\"}"}' "http://localhost:4567/tags/ingredient"
 
+#label 'milk' as [tag:ingredient]
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"milk", "annotationTemplate":"{ingredient:\"milk\"}"}' "http://localhost:4567/tags/ingredient"
 
+#label 'a litre of something' as [tag:ingredient] including the amount in the annotation
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"a litre of [tag:ingredient]", "annotationTemplate":"{ingredient:#1.ingredient#, amount:\"1\", measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient"
+
+#same goes for spoons
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"a spoon of of [tag:ingredient]", "annotationTemplate":"{ingredient:#1.ingredient#, amount:\"1\", measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient"
+
+#a number of spoons or liters
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"[r:[0-9]+] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient"
+curl -X POST -H "Content-Type: application/json"  -d '{"pattern":"[r:[0-9]+] spoons of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient"
 
