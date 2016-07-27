@@ -6,25 +6,27 @@ A parser/annotator completely accessible through a REST interface, allowing gram
 It lets you:
 
 * match substrings and have partial matches
-* enrich the text with arbitrary annotations
+* add, delete and list the grammar rules and the annotators at runtime
+* enrich the text with annotations
 * define your own annotators/grammar rules as HTTP services (WordNet, POS taggers, etc.)
 * get explanations for a parsing result
 * generate a sample text for a given pattern
-* add, delete and list the grammar rules and the annotators at runtime
 * match Unicode characters, including of course emojis 😌
-* work with spaceless languages (e.g. Chinese), as the parser itself is language-agnostic
+* work with space-less languages (e.g. Chinese), as the parser itself is language-agnostic
 
 it's free and ready for use on Docker Hub.
 
 How to use
 ----------
-In this example, which you can see in `complete_example.sh`,  we'll build an annotator for recipe procedures, like:
+In general, you use the APIs to define rules and patterns, aggregating them to form more complex ones.
+
+In this example, which you can see in `complete_example.sh`,  we'll build an annotator to parse and extract information from recipe procedures, like:
 * Boil the sugar, water, lemon and crushed ginger for 15 minutes.
 * Strain the mixture and let it cool.
 * Mix in the yeast and let the mixture ferment for two days
 * Put the drink in bottles and add a raisin to each bottle.
 
-for each step let's detect the subject, the action, the tools and additional parameters (time, temperature).
+for each step let's detect the subject, the action, the tools and additional parameters (time, temperature, etc.).
 
 First, run the application. I warmly suggest to use Docker:
 
@@ -96,7 +98,14 @@ other rules are available, like char to match an unicode character, i to match c
 and if we match "There's are 34 litres of milk there" we get a surprise: there are 2 interpretations, because the service matches both the 34 and the 4 (ignoring the 3), following the given regex.
 We have two solutions: one is to pass `"matchWhole": true ` to the parse, which will parse strictly the whole string, or change the regex to [r:[^0-9][0-9]+] and add another rule to match [r:^[0-9]+]
 
-TODO continue from here
+We could do the same for any measurement unit that comes in our mind, but it would be verbose. A smarter thing is to define a tag for all of the ingredients measurement units:
+
+    curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"litre","annotationTemplate":"{measure_unit:\"litre\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+
+same goes for spoons, glasses and whatever comes to our mind. Then we can write a more generic rule to match ingredient amounts:
+
+    curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
+
 
 Roadmap
 -------

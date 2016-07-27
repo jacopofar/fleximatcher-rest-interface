@@ -44,10 +44,23 @@ curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"a spoo
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[0-9]+] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[0-9]+] spoons of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
-#show some matches
+#show some matches up to now
 
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"There'"'"'s milk there","pattern":"[tag:ingredient]"}' "http://localhost:4567/parse"
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"There'"'"'s a litre of milk there","pattern":"[tag:ingredient_with_amount]"}' "http://localhost:4567/parse"
+
+#a smarter thing: define a measurement unit tag (singular and plural)
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"litre","annotationTemplate":"{measure_unit:\"litre\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"spoon","annotationTemplate":"{measure_unit:\"spoon\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"glass","annotationTemplate":"{measure_unit:\"glass\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"litres","annotationTemplate":"{measure_unit:\"litre\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"spoons","annotationTemplate":"{measure_unit:\"spoon\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"glasses","annotationTemplate":"{measure_unit:\"glass\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
+
+
+#...and use them
+curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 #generate a few samples
 for n in {1..10}; do
