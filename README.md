@@ -107,6 +107,17 @@ same goes for spoons, glasses and whatever comes to our mind. Then we can write 
     curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 
+OK, now we have a problem: we defined two patterns for the same thing. We want to remove the older one, so let's list the tags and see the rules attached to them:
+
+    curl http://localhost:4567/tags
+    curl http://localhost:4567/tags/ingredient_with_amount
+
+the first call list the tags, and the second list the rules for the given one. From there, I see the ids for the old rule, for example _ingredient_with_amount_1_, so with:
+
+    curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_3"
+
+this deletes the rule. An important feature of this service is that you can remove rules at runtime, without restarting it.
+
 Roadmap
 -------
 

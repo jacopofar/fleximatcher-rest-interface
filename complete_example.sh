@@ -58,6 +58,10 @@ curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"litres"
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"spoons","annotationTemplate":"{measure_unit:\"spoon\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"glasses","annotationTemplate":"{measure_unit:\"glass\"}"}' "http://localhost:4567/tags/ingredient_measurement_unit"
 
+#delete the first ones
+
+curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_3"
+curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_4"
 
 #...and use them
 curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
