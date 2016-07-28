@@ -118,6 +118,8 @@ the first call list the tags, and the second list the rules for the given one. F
 
 this deletes the rule. An important feature of this service is that you can remove rules at runtime, without restarting it.
 
+TODO continue from here :)
+
 Roadmap
 -------
 
