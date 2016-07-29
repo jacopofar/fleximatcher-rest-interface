@@ -116,9 +116,24 @@ the first call list the tags, and the second list the rules for the given one. F
 
     curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_3"
 
-this deletes the rule. An important feature of this service is that you can remove rules at runtime, without restarting it.
+this deletes the rule. An important feature of this service is that you can remove rules at runtime, without restarting the parser.
 
-TODO continue from here :)
+Now we have the capability of recognize ingredients among a list of handwritten ones, but there are hundreds of possible ingredients and write them down is boring to say the least. Why not use an existing database to match all of them ?
+
+English WordNet is a lexical database containing, among other things, hypernym/hyponym relationships between English words, for example it knows that *lemon* is an hyponym of *fruit*. Fleximatcher allows to define an _external HTTP annotator_, that is an HTTP endpoint which expects a POST with a text and a pattern and returns a list of annotations.
+In [another repository](https://github.com/jacopofar/wordnet-as-a-service) I published exactly that kind of service, conveniently available on the Docker Hub, so let's see how to use it.
+
+First, let's run the annotator with `docker run --name=worndet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a-service`
+
+You can bind an endpoint to a rule with a PUT
+ 
+    curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://localhost:5679/hypernyms_tagger/12"}' "http://localhost:4567/rules/en-hyp"
+
+
+TODO manage the localhost issue with docker, maybe use linking or the Docker 1.12 features
+
+now the en-hyp rule will refer to the annotations produced by this external service.
+
 
 Roadmap
 -------

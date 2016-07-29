@@ -70,3 +70,6 @@ curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+
 for n in {1..10}; do
   curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"[tag:ingredient_with_amount]"}' "http://localhost:4567/generate"
 done
+
+#now bind the WordNet HTTP to the service
+curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://localhost:5679/hypernyms_tagger/12"}' "http://localhost:4567/rules/en-hyp"
