@@ -125,14 +125,20 @@ In [another repository](https://github.com/jacopofar/wordnet-as-a-service) I pub
 
 First, let's run the annotator with `docker run --name=worndet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a-service`
 
-You can bind an endpoint to a rule with a PUT
+You can bind an endpoint to a rule with a PUT:
  
-    curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://localhost:5679/hypernyms_tagger/12"}' "http://localhost:4567/rules/en-hyp"
+    curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
 
+in the POST payload is specified an URL, and on the address a rule name, in this case _en-hypo_ (short for _English Hyponym_). Each time a rule in the form `[en-hypo:something]` or just `[en-hypo]` will be used, a POST request to that endpoint containing the text and the parameter, so that it can give the list of annotations.
 
-TODO manage the localhost issue with docker, maybe use linking or the Docker 1.12 features
+In this case, the annotator expects a parameter in the form `w=word` or `w=word,n=class` where word is the word to match hyponyms of and n is the part of the speech (e.g. adjective).
+Note: the example scripts uses Docker link function to connect the two services, if you didn't use it you probably want to use your IP for the WNaaS endpoint.
 
-now the en-hyp rule will refer to the annotations produced by this external service.
+Now the _en-hypo_ rule can be used to match hyponyms of a given english word, so we can define a pattern like:
+
+    curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=vegetable]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+
+and match each type of word marked as vegetable in WordNet as an ingredient.
 
 
 Roadmap
