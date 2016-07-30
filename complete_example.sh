@@ -72,4 +72,7 @@ for n in {1..10}; do
 done
 
 #now bind the WordNet HTTP to the service
-curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://waas:5679/hypernym/12"}' "http://localhost:4567/rules/en-hyp"
+curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
+
+#show the usage
+curl -X POST -H "Content-Type: application/json"  -w "\n"  -d '{"text":"a carrot, a lemon, a lion","pattern":"[en-hypo:w=vegetable]"}' "http://localhost:4567/parse"
