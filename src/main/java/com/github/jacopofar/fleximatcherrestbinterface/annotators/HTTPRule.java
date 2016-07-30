@@ -35,11 +35,11 @@ public class HTTPRule extends MatchingRule {
         boolean totalMatch = false;
         try {
             HttpResponse<JsonNode> response;
-            if(apiKey == null){
+            if(apiKey != null){
                 response = Unirest.post(endpoint.toString())
                         .header("content-type", "application/json")
                         .header("X-API-KEY", apiKey)
-                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + ", \"api_key\":\" + JSONObject.quote(apiKey) +  \"}")
+                        .body("{\"parameter\":" + JSONObject.quote(parameter) +  ",\"text\":" + JSONObject.quote(text) + ", \"api_key\":" + JSONObject.quote(apiKey) + "}")
                         .asJson();
 
             }

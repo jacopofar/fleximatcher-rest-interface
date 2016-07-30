@@ -7,23 +7,23 @@ docker stop worndet_as_a_service
 docker rm fleximatcher_rest
 docker rm worndet_as_a_service
 
+echo "starting the Wordnet-as-a-service container..."
+
+if docker run --name=wordnet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a-service; then
+    echo "WordNet-as-a-service service started correctly as a Docker daemon container"
+else
+    echo "something went wrong starting the container. Is Docker installed and can be used by this user?"
+fi
+
 echo "starting the Fleximatcher Rest Interface container..."
 
-if docker run --name=fleximatcher_rest -d -p 4567:4567 jacopofar/fleximatcher-rest-interface; then
+if docker run --name=fleximatcher_rest --link wordnet_as_a_service:waas -d -p 4567:4567 jacopofar/fleximatcher-rest-interface; then
     echo "FRI service started correctly as a Docker daemon container"
 else
     echo "something went wrong starting the container. Is Docker installed and can be used by this user?"
 fi
 
-echo "starting the Wordnet-as-a-service container..."
-
-if docker run --name=worndet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a-service; then
-    echo "WordNet-as-a-service service started correctly as a Docker daemon container"
-else
-    echo "something went wrong starting the container. Is Docker installed and can be used by this user?"
-fi
-#only for the example, otherwise run curl until the endpoints are up
-echo "giving the Docker containers some time to ensure they are listening..."
+echo "giving the Docker containers some time to ensure they are running and listening..."
 
 sleep 15
 
@@ -72,4 +72,4 @@ for n in {1..10}; do
 done
 
 #now bind the WordNet HTTP to the service
-curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://localhost:5679/hypernyms_tagger/12"}' "http://localhost:4567/rules/en-hyp"
+curl -X PUT -H "Content-Type: application/json"  -d '{"endpoint":"http://waas:5679/hypernym/12"}' "http://localhost:4567/rules/en-hyp"
