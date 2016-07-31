@@ -81,6 +81,7 @@ curl -X POST -H "Content-Type: application/json"  -w "\n"  -d '{"text":"a carrot
 
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=vegetable]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=fruit]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=food]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
 
 #show the usage
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"a carrot, a lemon, a lion","pattern":"[tag:ingredient]"}' "http://localhost:4567/parse"
