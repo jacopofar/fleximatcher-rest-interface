@@ -1,11 +1,11 @@
 Fleximatecher HTTP interface
 ============================
 
-A parser/annotator completely accessible through a REST interface, allowing grammar rules to be changed on the fly.
+A parser and annotator completely accessible through a REST interface, allowing grammar rules to be changed on the fly.
 
 It lets you:
 
-* match substrings and have partial matches
+* match substrings and have partial matches on a given text
 * add, delete and list the grammar rules and the annotators at runtime
 * enrich the text with annotations
 * define your own annotators/grammar rules as HTTP services (WordNet, POS taggers, etc.)
@@ -140,6 +140,27 @@ Now the _en-hypo_ rule can be used to match hyponyms of a given english word, so
 
 and match each type of word marked as vegetable in WordNet as an ingredient.
 
+We can also get samples of the text we could parse, so the application exposes the `/generate` endpoint. The usage is the same of `/parse`, but it doesn't require a text and returns a JSON with the sampled text.
+
+If we use HTTP annotators, we can give an additional sampler endpoint which is used to generate samples for what they annotate. WaaS support it, so with:
+
+    curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12", "sampler_endpoint":"http://waas:5679/sample/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
+
+we overwrite the en-hypo rule specifying the sampler endpoint.
+
+Using:
+
+      curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"pattern":"[tag:ingredient_with_amount]"}' "http://localhost:4567/generate"
+
+we now obtain sentences like:
+
+* a litre of beetroot
+* a spoon of of brussels sprouts
+* [r:[^0-9][0-9]+] glass of water
+
+the latest one shows a regex template, because regex annotators currently do not define a sampler function. The same happens if we try to generate a sample with an HTTP annotator without defining a sampler endpoint
+
+    
 
 Roadmap
 -------

@@ -85,5 +85,8 @@ curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hy
 
 #show the usage
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"a carrot, a lemon, a lion","pattern":"[tag:ingredient]"}' "http://localhost:4567/parse"
-#it matches expressions not really correct in natural language
+#it matches expressions not really correct in natural language, but it's fine
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"eggs,flour,water, 54 litres of eggs","pattern":"[tag:ingredient_with_amount]"}' "http://localhost:4567/parse"
+
+#re-bind WordNet HTTP adding the sampler endpoint. It gets overwritten
+curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12", "sampler_endpoint":"http://waas:5679/sample/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
