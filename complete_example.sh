@@ -40,13 +40,16 @@ curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"a litr
 #same goes for spoons
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"a spoon of of [tag:ingredient]", "annotationTemplate":"{ingredient:#1.ingredient#, amount:\"1\", measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
-#a number, defined as a sequence of digits surrounded by non-digits
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9][0-9]+]"}' "http://localhost:4567/tags/number"
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:^[0-9]+]"}' "http://localhost:4567/tags/number"
+#a number, defined as a sequence of digits surrounded by non-digits, a fraction or a decimal number
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9]][r:[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:#1#}}' "http://localhost:4567/tags/number"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:^[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:#0#}}' "http://localhost:4567/tags/number"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9]][r:[0-9]+]/[r:[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:{num:#1#, den:#3#}"}' "http://localhost:4567/tags/number"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:^[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:{num:#1#, den:#3#}}}' "http://localhost:4567/tags/number"
+
 
 #a number of spoons or liters
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] spoons of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0.value#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] spoons of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0.value#, measure_unit:\"spoons\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 #show some matches up to now
 
@@ -68,7 +71,7 @@ curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567
 curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_4"
 
 #...and use them
-curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[tag:number] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
+curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[tag:number] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0.value#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 #generate a few samples
 for n in {1..10}; do
@@ -76,7 +79,7 @@ for n in {1..10}; do
 done
 
 #allow count without measurement units (e.g. "4 eggs")
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#}"}' "http://localhost:4567/tags/ingredient_with_amount"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0.value#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 
 #now bind the WordNet HTTP to the service

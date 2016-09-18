@@ -98,7 +98,7 @@ The same way we can match a spoon as a measurement unit and whatever comes to ou
 other rules are available, like char to match an unicode character, i to match case-insensitively and multi to match a logical AND between expressions. See [here](https://github.com/jacopofar/fleximatcher) for more details. 
 
 and if we match "There's are 34 litres of milk there" we get a surprise: there are 2 interpretations, because the service matches both the 34 and the 4 (ignoring the 3), following the given regex.
-We have three possible solutions: one is to pass `"matchWhole": true ` to the parse, which will parse strictly the whole string, otherwise we can change the regex to [r:[^0-9][0-9]*] and add another rule to match [r:^[0-9]+]; the easiest way, however, is to define a *number* tag to match both cases, which also hase the advantage of be reusable.
+We have three possible solutions: one is to pass `"matchWhole": true ` to the parse, which will parse strictly the whole string, otherwise we can change the regex to [r:[^0-9][0-9]*] and add another rule to match [r:^[0-9]+]; the easiest way, however, is to define a *number* tag to match both cases and produce a single annotation format, which also has the advantage of be reusable.
 
 
 We could do the same for any measurement unit that comes in our mind, but it would be verbose. A smarter thing is to define a tag for all of the ingredients measurement units:
@@ -161,7 +161,9 @@ we now obtain sentences like:
 * a spoon of of brussels sprouts
 * [r:[^0-9][0-9]*] glass of water
 
-the latest one shows a regex template, because regex annotators currently do not define a sampler function. The same happens if we try to generate a sample with an HTTP annotator without defining a sampler endpoint
+the latest one shows a regex template, because regex annotators currently do not define a sampler function. The same happens if we try to generate a sample with an HTTP annotator without defining a sampler endpoint.
+
+
 
 
 Roadmap
