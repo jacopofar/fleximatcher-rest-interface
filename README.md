@@ -30,7 +30,7 @@ In this example, which you can see in `complete_example.sh`,  we'll build an ann
 
 for each step let's try to detect the subject, the action, the tools and additional parameters (time, temperature, etc.).
 
-First, run the application. I warmly suggest to use Docker:
+First, run the application. I suggest to use Docker for greatest comfort:
 
      docker run -p 4567:4567 jacopofar/fleximatcher-rest-interface
 
@@ -93,12 +93,13 @@ the reply means "between position 8 and 23 there's a text which matches the patt
 Note that interpretations is an array: we can have ambiguity, and the service will in taht case give back all of the interpretations.
 The same way we can match a spoon as a measurement unit and whatever comes to our mind. The next logical step is to match an expression like "N liters of water", for any N, we can do that using the rule __r__ (regex):
 
-    curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[0-9]+] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
+    curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 other rules are available, like char to match an unicode character, i to match case-insensitively and multi to match a logical AND between expressions. See [here](https://github.com/jacopofar/fleximatcher) for more details. 
 
 and if we match "There's are 34 litres of milk there" we get a surprise: there are 2 interpretations, because the service matches both the 34 and the 4 (ignoring the 3), following the given regex.
-We have two solutions: one is to pass `"matchWhole": true ` to the parse, which will parse strictly the whole string, or change the regex to [r:[^0-9][0-9]+] and add another rule to match [r:^[0-9]+]
+We have three possible solutions: one is to pass `"matchWhole": true ` to the parse, which will parse strictly the whole string, otherwise we can change the regex to [r:[^0-9][0-9]*] and add another rule to match [r:^[0-9]+]; the easiest way, however, is to define a *number* tag to match both cases, which also hase the advantage of be reusable.
+
 
 We could do the same for any measurement unit that comes in our mind, but it would be verbose. A smarter thing is to define a tag for all of the ingredients measurement units:
 
@@ -106,10 +107,10 @@ We could do the same for any measurement unit that comes in our mind, but it wou
 
 same goes for spoons, glasses and whatever comes to our mind. Then we can write a more generic rule to match ingredient amounts:
 
-    curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[r:[^0-9][0-9]+] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
+    curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[tag:number] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 
-OK, now we have a problem: we defined two patterns for the same thing. We want to remove the older one, so let's list the tags and see the rules attached to them:
+Now we have a problem: we defined two patterns for the same thing. We want to remove the older one, so let's list the tags and see the rules attached to them:
 
     curl http://localhost:4567/tags
     curl http://localhost:4567/tags/ingredient_with_amount
@@ -123,7 +124,7 @@ this deletes the rule. An important feature of this service is that you can remo
 Now we have the capability to recognize ingredients among a list of handwritten ones, but there are hundreds of possible ingredients and write them down is boring to say the least. Why not use an existing database to match all of them ?
 
 English WordNet is a lexical database containing, among other things, hypernym/hyponym relationships between English words, for example it knows that *lemon* is an hyponym of *fruit*. Fleximatcher allows to define an _external HTTP annotator_, that is an HTTP endpoint which expects a POST with a text and a pattern and returns a list of annotations.
-In [another repository](https://github.com/jacopofar/wordnet-as-a-service) I published exactly that kind of service, conveniently available on the Docker Hub, so let's see how to use it.
+In [another repository](https://github.com/jacopofar/wordnet-as-a-service) you can find exactly that kind of service, conveniently available on the Docker Hub as well, so let's see how to use it.
 
 First, let's run the annotator with `docker run --name=worndet_as_a_service -d -p 5679:5679 jacopofar/wordnet-as-a-service`
 
@@ -158,7 +159,7 @@ we now obtain sentences like:
 
 * a litre of beetroot
 * a spoon of of brussels sprouts
-* [r:[^0-9][0-9]+] glass of water
+* [r:[^0-9][0-9]*] glass of water
 
 the latest one shows a regex template, because regex annotators currently do not define a sampler function. The same happens if we try to generate a sample with an HTTP annotator without defining a sampler endpoint
 
