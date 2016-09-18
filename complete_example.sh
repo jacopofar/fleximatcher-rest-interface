@@ -72,16 +72,17 @@ for n in {1..10}; do
 done
 
 #now bind the WordNet HTTP to the service
-curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
+curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/6"}' "http://localhost:4567/rules/en-hypo"
 
-#show the usage
+#show the usage./
 curl -X POST -H "Content-Type: application/json"  -w "\n"  -d '{"text":"a carrot, a lemon, a lion","pattern":"[en-hypo:w=vegetable]"}' "http://localhost:4567/parse"
 
 #use hyponyms of vegetables and fruits as ingredients
 
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=vegetable]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=fruit]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=food]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+#curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=vegetable]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+#curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=fruit]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+#curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=food]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[en-hypo:w=foodstuff]", "annotationTemplate":"{ingredient:#0#}"}' "http://localhost:4567/tags/ingredient"
 
 #show the usage
 curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"a carrot, a lemon, a lion","pattern":"[tag:ingredient]"}' "http://localhost:4567/parse"
@@ -90,3 +91,9 @@ curl -X POST -H "Content-Type: application/json" -w "\n" -d '{"text":"eggs,flour
 
 #re-bind WordNet HTTP adding the sampler endpoint. It gets overwritten
 curl -X PUT -H "Content-Type: application/json" -w "\n"  -d '{"endpoint":"http://waas:5679/hyponym/12", "sampler_endpoint":"http://waas:5679/sample/hyponym/12"}' "http://localhost:4567/rules/en-hypo"
+
+#show the list of known tags
+curl -X GET -w "\n" "http://localhost:4567/tags"
+
+#show the definitions for one of them
+curl -X GET -w "\n" "http://localhost:4567/tags/ingredient_with_amount"

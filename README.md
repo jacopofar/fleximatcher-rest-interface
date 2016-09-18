@@ -112,13 +112,13 @@ OK, now we have a problem: we defined two patterns for the same thing. We want t
     curl http://localhost:4567/tags
     curl http://localhost:4567/tags/ingredient_with_amount
 
-the first call list the tags, and the second list the rules for the given one. From there, I see the ids for the old rule, for example _ingredient_with_amount_1_, so with:
+the first call lists the tags, and the second lists the rules for the given one. From there, we see the ids for the old rule, for example _ingredient_with_amount_1_, so with:
 
     curl -X DELETE -H "Content-Type: application/json"  -d '' "http://localhost:4567/tags/ingredient_with_amount/ingredient_with_amount_3"
 
 this deletes the rule. An important feature of this service is that you can remove rules at runtime, without restarting the parser.
 
-Now we have the capability of recognize ingredients among a list of handwritten ones, but there are hundreds of possible ingredients and write them down is boring to say the least. Why not use an existing database to match all of them ?
+Now we have the capability to recognize ingredients among a list of handwritten ones, but there are hundreds of possible ingredients and write them down is boring to say the least. Why not use an existing database to match all of them ?
 
 English WordNet is a lexical database containing, among other things, hypernym/hyponym relationships between English words, for example it knows that *lemon* is an hyponym of *fruit*. Fleximatcher allows to define an _external HTTP annotator_, that is an HTTP endpoint which expects a POST with a text and a pattern and returns a list of annotations.
 In [another repository](https://github.com/jacopofar/wordnet-as-a-service) I published exactly that kind of service, conveniently available on the Docker Hub, so let's see how to use it.
@@ -160,7 +160,6 @@ we now obtain sentences like:
 
 the latest one shows a regex template, because regex annotators currently do not define a sampler function. The same happens if we try to generate a sample with an HTTP annotator without defining a sampler endpoint
 
-    
 
 Roadmap
 -------
