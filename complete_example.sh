@@ -43,7 +43,7 @@ curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"a spoo
 #a number, defined as a sequence of digits surrounded by non-digits, a fraction or a decimal number
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9]][r:[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:#1#}}' "http://localhost:4567/tags/number"
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:^[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:#0#}}' "http://localhost:4567/tags/number"
-curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9]][r:[0-9]+]/[r:[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:{num:#1#, den:#3#}"}' "http://localhost:4567/tags/number"
+curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:[^0-9]][r:[0-9]+]/[r:[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:{num:\"#1#\", den:\"#3#\"}"}' "http://localhost:4567/tags/number"
 curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[r:^[0-9]+][r:[^0-9]]", "annotationTemplate":"{value:{num:#1#, den:#3#}}}' "http://localhost:4567/tags/number"
 
 

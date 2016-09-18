@@ -93,7 +93,7 @@ the reply means "between position 8 and 23 there's a text which matches the patt
 Note that interpretations is an array: we can have ambiguity, and the service will in taht case give back all of the interpretations.
 The same way we can match a spoon as a measurement unit and whatever comes to our mind. The next logical step is to match an expression like "N liters of water", for any N, we can do that using the rule __r__ (regex):
 
-    curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
+    curl -X POST -H "Content-Type: application/json"  -w "\n" -d '{"pattern":"[tag:number] litres of [tag:ingredient]", "annotationTemplate":"{ingredient:#2.ingredient#, amount:#0.value#, measure_unit:\"liters\"}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 other rules are available, like char to match an unicode character, i to match case-insensitively and multi to match a logical AND between expressions. See [here](https://github.com/jacopofar/fleximatcher) for more details. 
 
@@ -107,7 +107,7 @@ We could do the same for any measurement unit that comes in our mind, but it wou
 
 same goes for spoons, glasses and whatever comes to our mind. Then we can write a more generic rule to match ingredient amounts:
 
-    curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[tag:number] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
+    curl -X POST -H "Content-Type: application/json" -d '{"pattern":"[tag:number] [tag:ingredient_measurement_unit] of [tag:ingredient]", "annotationTemplate":"{ingredient:#4.ingredient#, amount:#0.value#, measure_unit:#2#}"}' "http://localhost:4567/tags/ingredient_with_amount"
 
 
 Now we have a problem: we defined two patterns for the same thing. We want to remove the older one, so let's list the tags and see the rules attached to them:
