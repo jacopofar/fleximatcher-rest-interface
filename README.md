@@ -20,13 +20,15 @@ How to use
 ----------
 In general, you use the APIs to define rules and patterns, aggregating them to form more complex ones.
 
+Fleximatcher is completely based on the concept of *annotators*: components which, given a text and an optional parameter string, mark spans of that text with JSON-serialized metadata. The tool comes with built-in annotators for the most common cases (like regular expressions, case insensitive text, unicode characters and annotator combinators), but two of the,m are particularly interesting: the HTTP annotator and the tag annotator. The former calls an HTTP endpoint to produce the needed annotations, making easier to extend the parser; the second implement a rule of a generative grammar, making it possible to produce complex annotations from simpler ones.
+
 In this example, which you can see in `complete_example.sh`,  we'll build an annotator to parse and extract information from recipe procedures, like:
 * Boil the sugar, water, lemon and crushed ginger for 15 minutes.
 * Strain the mixture and let it cool.
 * Mix in the yeast and let the mixture ferment for two days
 * Put the drink in bottles and add a raisin to each bottle.
 
-for each step let's detect the subject, the action, the tools and additional parameters (time, temperature, etc.).
+for each step let's try to detect the subject, the action, the tools and additional parameters (time, temperature, etc.).
 
 First, run the application. I warmly suggest to use Docker:
 
