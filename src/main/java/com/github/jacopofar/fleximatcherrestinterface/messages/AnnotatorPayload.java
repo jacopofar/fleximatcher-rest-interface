@@ -1,4 +1,4 @@
-package com.github.jacopofar.fleximatcherrestbinterface.messages;
+package com.github.jacopofar.fleximatcherrestinterface.messages;
 
 import java.net.MalformedURLException;
 import java.net.URL;

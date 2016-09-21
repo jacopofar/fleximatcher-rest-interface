@@ -1,8 +1,8 @@
-package com.github.jacopofar.fleximatcherrestbinterface.annotators;
+package com.github.jacopofar.fleximatcherrestinterface.annotators;
 
 import com.github.jacopofar.fleximatcher.rule.RuleFactory;
 import com.github.jacopofar.fleximatcher.rules.MatchingRule;
-import com.github.jacopofar.fleximatcherrestbinterface.exceptions.RuntimeJSONCarryingException;
+import com.github.jacopofar.fleximatcherrestinterface.exceptions.RuntimeJSONCarryingException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;

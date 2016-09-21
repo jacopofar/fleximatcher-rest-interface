@@ -1,16 +1,16 @@
-package com.github.jacopofar.fleximatcherrestbinterface;
+package com.github.jacopofar.fleximatcherrestinterface;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jacopofar.fleximatcher.FlexiMatcher;
 import com.github.jacopofar.fleximatcher.annotations.MatchingResults;
 import com.github.jacopofar.fleximatcher.annotations.TextAnnotation;
 import com.github.jacopofar.fleximatcher.importer.FileTagLoader;
-import com.github.jacopofar.fleximatcherrestbinterface.annotators.HTTPRuleFactory;
-import com.github.jacopofar.fleximatcherrestbinterface.exceptions.RuntimeJSONCarryingException;
-import com.github.jacopofar.fleximatcherrestbinterface.messages.AnnotatorPayload;
-import com.github.jacopofar.fleximatcherrestbinterface.messages.CompleteTagPayload;
-import com.github.jacopofar.fleximatcherrestbinterface.messages.ParseRequestPayload;
-import com.github.jacopofar.fleximatcherrestbinterface.messages.TagRulePayload;
+import com.github.jacopofar.fleximatcherrestinterface.annotators.HTTPRuleFactory;
+import com.github.jacopofar.fleximatcherrestinterface.exceptions.RuntimeJSONCarryingException;
+import com.github.jacopofar.fleximatcherrestinterface.messages.AnnotatorPayload;
+import com.github.jacopofar.fleximatcherrestinterface.messages.CompleteTagPayload;
+import com.github.jacopofar.fleximatcherrestinterface.messages.ParseRequestPayload;
+import com.github.jacopofar.fleximatcherrestinterface.messages.TagRulePayload;
 import org.json.JSONException;
 import org.json.JSONObject;
 import spark.Response;
