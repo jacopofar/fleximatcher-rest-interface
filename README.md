@@ -1,4 +1,4 @@
-Fleximatecher HTTP interface
+Fleximatcher HTTP interface
 ============================
 
 A parser and annotator completely accessible through a REST interface, allowing grammar rules to be changed on the fly.
