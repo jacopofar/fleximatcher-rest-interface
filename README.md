@@ -1,6 +1,8 @@
 Fleximatcher HTTP interface
 ============================
 
+## Together with the main project, Fleximatcher, this tool is now archived. Have a look at SpaCy for a recent alternative
+
 A parser and annotator completely accessible through a REST interface, allowing grammar rules to be changed on the fly.
 
 It lets you:
